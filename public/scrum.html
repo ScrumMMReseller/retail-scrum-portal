@@ -308,16 +308,16 @@
         .replace(/"/g, "&quot;");
     }
 
-    // ---- dataSdk replacement that talks to /api/scrum on Vercel ----
+    // ---- dataSdk that talks to Netlify function /.netlify/functions/scrum ----
     window.dataSdk = {
       _handler: null,
 
       async init(handler) {
         this._handler = handler;
-        const resp = await fetch("/api/scrum", { method: "GET" });
+        const resp = await fetch("/.netlify/functions/scrum", { method: "GET" });
 
         if (!resp.ok) {
-          console.error("GET /api/scrum failed", resp.status);
+          console.error("GET /.netlify/functions/scrum failed", resp.status);
           handler.onDataChanged([]);
           return { isOk: false };
         }
@@ -346,14 +346,14 @@
       },
 
       async create(row) {
-        const resp = await fetch("/api/scrum", {
+        const resp = await fetch("/.netlify/functions/scrum", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(row)
         });
 
         if (!resp.ok) {
-          console.error("POST /api/scrum failed", resp.status);
+          console.error("POST /.netlify/functions/scrum failed", resp.status);
           return { isOk: false };
         }
 
@@ -818,7 +818,7 @@
           `"${(update.yesterday_work || "").replace(/"/g,'""')}"`,
           `"${(update.today_plan || "").replace(/"/g,'""')}"`,
           `"${(update.blockers || "").replace(/"/g,'""')}"`,
-          `"${(update.remarks || "").replace(/"/g,'""')}"`
+          `"${(update.remarks || "").replace(/"/g,'""')}"`,
         ].join(","))
       ].join("\n");
 
@@ -929,6 +929,20 @@
           document.body.removeChild(toast);
         }, 300);
       }, 3000);
+    }
+
+    // modal helpers
+    function openModal() {
+      document.getElementById('update-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('update-modal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+      document.getElementById('update-form').reset();
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('update-date').value = today;
     }
 
     document.addEventListener("DOMContentLoaded", initializeApp);
