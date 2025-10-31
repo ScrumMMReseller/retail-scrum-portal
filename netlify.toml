@@ -1,0 +1,10 @@
+[build]
+  # We are NOT building React/Vite/etc. It's just static HTML.
+  command = ""
+  # Tell Netlify: deploy the /public folder as the website
+  publish = "public"
+
+[functions]
+  # Tell Netlify where your serverless functions live
+  directory = "netlify/functions"
+
