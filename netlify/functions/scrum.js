@@ -1,81 +1,31 @@
-// netlify/functions/scrum.js
+const ZOHO_BASE_ACCOUNTS = "https://accounts.zoho.eu";
+const ZOHO_BASE_API      = "https://www.zohoapis.eu";
 
-// Helper: get a fresh Zoho access token using refresh token
 async function getZohoAccessToken() {
   const params = new URLSearchParams({
     refresh_token: process.env.ZOHO_REFRESH_TOKEN,
     client_id: process.env.ZOHO_CLIENT_ID,
     client_secret: process.env.ZOHO_CLIENT_SECRET,
-    grant_type: "refresh_token",
+    grant_type: "refresh_token"
   });
 
-  // NOTE: if you're not on "zohoapis.com" region (like .eu or .in),
-  // change this URL accordingly.
-  const resp = await fetch("https://accounts.zoho.com/oauth/v2/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-  });
+  const tokenResp = await fetch(
+    `${ZOHO_BASE_ACCOUNTS}/oauth/v2/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString()
+    }
+  );
 
-  const json = await resp.json();
+  const tokenJson = await tokenResp.json();
 
-  if (!resp.ok || !json.access_token) {
-    console.error("Failed to refresh Zoho token:", resp.status, json);
+  if (!tokenResp.ok || !tokenJson.access_token) {
+    console.error("Zoho token error:", tokenResp.status, tokenJson);
     throw new Error("Zoho auth failed");
   }
 
-  return json.access_token;
-}
-
-async function fetchScrumUpdatesFromZoho(accessToken) {
-  const resp = await fetch("https://www.zohoapis.com/crm/v2/Scrum_Updates", {
-    method: "GET",
-    headers: {
-      Authorization: `Zoho-oauthtoken ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  const raw = await resp.json();
-
-  return {
-    status: resp.status,
-    raw,
-  };
-}
-
-async function createScrumUpdateInZoho(accessToken, body) {
-  const recordToInsert = {
-    Name: body.id,
-    Date_Of_Standup: body.date,
-    Team_Member_Name: body.team_member,
-    Department: body.department,
-    Daily_Tasks: body.yesterday_work,
-    Today_s_Plan: body.today_plan,
-    Issues_Encountered: body.blockers,
-    Remarks_Notes: body.remarks,
-    Blocker_Status: body.status === "active" ? "Open" : "Closed",
-    Created_At: body.created_at,
-  };
-
-  const resp = await fetch("https://www.zohoapis.com/crm/v2/Scrum_Updates", {
-    method: "POST",
-    headers: {
-      Authorization: `Zoho-oauthtoken ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      data: [recordToInsert],
-      trigger: [],
-    }),
-  });
-
-  const raw = await resp.json();
-
-  return {
-    status: resp.status,
-    raw,
-  };
+  return tokenJson.access_token;
 }
 
 exports.handler = async (event) => {
@@ -84,70 +34,86 @@ exports.handler = async (event) => {
     "Access-Control-Allow-Headers": "Content-Type",
   };
 
-  // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+    return { statusCode: 200, headers: corsHeaders, body: "" };
   }
 
   try {
-    // 1. always get a fresh valid access token before doing anything
     const accessToken = await getZohoAccessToken();
 
     if (event.httpMethod === "GET") {
-      const { status, raw } = await fetchScrumUpdatesFromZoho(accessToken);
+      const zohoResp = await fetch(
+        `${ZOHO_BASE_API}/crm/v2/Scrum_Updates`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Zoho-oauthtoken ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const mapped = Array.isArray(raw.data)
-        ? raw.data.map((r) => ({
-            Name: r.Name,
-            Date_Of_Standup: r.Date_Of_Standup,
-            Team_Member_Name: r.Team_Member_Name,
-            Department: r.Department,
-            Daily_Tasks: r.Daily_Tasks,
-            Today_s_Plan: r.Today_s_Plan,
-            Issues_Encountered: r.Issues_Encountered,
-            Blocker_Status: r.Blocker_Status,
-            Resolution_Note: r.Resolution_Note,
-            Created_At: r.Created_At,
-            Resolved_At: r.Resolved_At,
-            Remarks_Notes: r.Remarks_Notes,
-          }))
-        : [];
+      const zohoJson = await zohoResp.json();
+
+      const mapped = (zohoJson.data || []).map((r) => ({
+        Name: r.Name,
+        Date_Of_Standup: r.Date_Of_Standup,
+        Team_Member_Name: r.Team_Member_Name,
+        Department: r.Department,
+        Daily_Tasks: r.Daily_Tasks,
+        Today_s_Plan: r.Today_s_Plan,
+        Issues_Encountered: r.Issues_Encountered,
+        Blocker_Status: r.Blocker_Status,
+        Resolution_Note: r.Resolution_Note,
+        Created_At: r.Created_At,
+        Resolved_At: r.Resolved_At,
+        Remarks_Notes: r.Remarks_Notes,
+      }));
 
       return {
         statusCode: 200,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          data: mapped,
-          _debug: {
-            zoho_status: status,
-            count: mapped.length,
-          },
-        }),
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ data: mapped }),
       };
     }
 
     if (event.httpMethod === "POST") {
       const body = JSON.parse(event.body || "{}");
-      const { status, raw } = await createScrumUpdateInZoho(accessToken, body);
+
+      const recordToInsert = {
+        Name: body.id,
+        Date_Of_Standup: body.date,
+        Team_Member_Name: body.team_member,
+        Department: body.department,
+        Daily_Tasks: body.yesterday_work,
+        Today_s_Plan: body.today_plan,
+        Issues_Encountered: body.blockers,
+        Remarks_Notes: body.remarks,
+        Blocker_Status: body.status === "active" ? "Open" : "Closed",
+        Created_At: body.created_at,
+      };
+
+      const zohoPostResp = await fetch(
+        `${ZOHO_BASE_API}/crm/v2/Scrum_Updates`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Zoho-oauthtoken ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: [recordToInsert],
+            trigger: [],
+          }),
+        }
+      );
+
+      const postJson = await zohoPostResp.json();
 
       return {
         statusCode: 200,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ok: true,
-          zoho_status: status,
-          zoho_raw: raw,
-        }),
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ ok: true, zoho: postJson }),
       };
     }
 
@@ -157,13 +123,13 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: "Method Not Allowed" }),
     };
   } catch (err) {
-    console.error("Function error:", err);
+    console.error("Handler error:", err);
     return {
       statusCode: 500,
       headers: corsHeaders,
       body: JSON.stringify({
         error: "Server error",
-        message: err.message || String(err),
+        message: err.message || "Zoho auth failed",
       }),
     };
   }
