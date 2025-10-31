@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retail Team Scrum Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      background-color: #F4F4F4;
+    }
+    .scrum-card { transition: all 0.3s ease; border-left: 4px solid #FFD400; }
+    .scrum-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    .department-tag { font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 500; }
+    .blocker-urgent { border-left-color: #EF4444; background: linear-gradient(90deg, rgba(239,68,68,0.05) 0%, transparent 100%); }
+    .timer-active { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.7;} }
+    .avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; color:white; font-size:14px; }
+    .status-indicator { width:12px; height:12px; border-radius:50%; border:2px solid white; position:absolute; bottom:-2px; right:-2px; }
+    .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    @view-transition { navigation: auto; }
+  </style>
+</head>
+<body class="min-h-full">
+  <div id="app" class="min-h-full">
+    <!-- HEADER -->
+    <header style="background-color:#1A2238;" class="text-white shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg"
+                 style="background-color:#FFD400;color:#1A2238;">
+              S
+            </div>
+            <div>
+              <h1 id="portal-title" class="text-xl font-bold">Retail Team Scrum Portal</h1>
+              <p class="text-sm opacity-75" id="current-date"></p>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <div id="timer-display" class="hidden bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+              <span class="text-sm font-medium">Meeting Timer: </span>
+              <span id="timer-text" class="font-bold">15:00</span>
+            </div>
+
+            <button id="start-scrum-btn"
+                    class="px-4 py-2 rounded-lg font-medium transition-colors"
+                    style="background-color:#FFD400;color:#1A2238;">
+              🚀 Start Scrum
+            </button>
+
+            <button id="add-update-btn"
+                    class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg font-medium transition-colors">
+              ➕ Add Update
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- TABS -->
+    <nav class="bg-white shadow-sm border-b">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+          <button class="tab-btn active py-4 px-2 border-b-2 font-medium text-sm transition-colors"
+                  data-tab="dashboard"
+                  style="border-color:#FFD400;color:#1A2238;">
+            📊 Team Dashboard
+          </button>
+          <button class="tab-btn py-4 px-2 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  data-tab="summary">
+            📋 Meeting Summary
+          </button>
+          <button class="tab-btn py-4 px-2 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  data-tab="manager">
+            👨‍💼 Manager Panel
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- DASHBOARD TAB -->
+      <div id="dashboard-tab" class="tab-content">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Today's Standup</h2>
+          <p class="text-gray-600">Track daily progress across all team members</p>
+        </div>
+
+        <div id="team-updates" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
+
+        <div id="empty-state" class="text-center py-12">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+               style="background-color:#FFD400;">
+            <span class="text-2xl">📝</span>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No updates yet today</h3>
+          <p class="text-gray-500 mb-4">Start by adding the first daily update</p>
+          <button class="add-update-trigger px-4 py-2 rounded-lg font-medium"
+                  style="background-color:#FFD400;color:#1A2238;">
+            Add First Update
+          </button>
+        </div>
+      </div>
+
+      <!-- SUMMARY TAB -->
+      <div id="summary-tab" class="tab-content hidden">
+        <div class="mb-6 flex justify-between items-center">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Meeting Summary</h2>
+            <p class="text-gray-600">View and export daily standup summaries</p>
+          </div>
+          <div class="flex space-x-3">
+            <input type="date"
+                   id="summary-date"
+                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+            <button id="export-btn"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              📄 Export Summary
+            </button>
+          </div>
+        </div>
+        <div id="summary-content" class="space-y-6"></div>
+      </div>
+
+      <!-- MANAGER TAB -->
+      <div id="manager-tab" class="tab-content hidden">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Manager Control Panel</h2>
+          <p class="text-gray-600">Filter, analyze, and provide feedback on team updates</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <select id="filter-member"
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+              <option value="">All Team Members</option>
+            </select>
+
+            <select id="filter-department"
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+              <option value="">All Departments</option>
+              <option value="Management">Management</option>
+              <option value="Retail / MM">Retail / MM</option>
+              <option value="E-commerce">E-commerce</option>
+              <option value="Logistics">Logistics</option>
+              <option value="Fulfillment">Fulfillment</option>
+              <option value="Customer Exp">Customer Exp</option>
+            </select>
+
+            <input type="date"
+                   id="filter-date"
+                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+          </div>
+
+          <div id="blocker-escalation-area"></div>
+        </div>
+
+        <div id="manager-content" class="space-y-4"></div>
+      </div>
+    </main>
+
+    <!-- MODAL -->
+    <div id="update-modal" class="fixed inset-0 z-50 hidden modal-overlay">
+      <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-semibold text-gray-900">Daily Standup Update</h3>
+              <button id="close-modal" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+
+            <form id="update-form" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                  <input type="date"
+                         id="update-date"
+                         name="date"
+                         required
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Team Member</label>
+                  <select id="team-member"
+                          name="team_member"
+                          required
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                    <option value="">Select team member</option>
+                    <option value="Amrit">Amrit</option>
+                    <option value="Vihan">Vihan</option>
+                    <option value="Maricel">Maricel</option>
+                    <option value="Kunal">Kunal</option>
+                    <option value="Mehboob">Mehboob</option>
+                    <option value="Aaron">Aaron</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <select id="department"
+                        name="department"
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                  <option value="">Select department</option>
+                  <option value="Management">Management</option>
+                  <option value="Retail / MM">Retail / MM</option>
+                  <option value="E-commerce">E-commerce</option>
+                  <option value="Logistics">Logistics</option>
+                  <option value="Fulfillment">Fulfillment</option>
+                  <option value="Customer Exp">Customer Exp</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Yesterday's Work</label>
+                <textarea id="yesterday-work"
+                          name="yesterday_work"
+                          rows="3"
+                          placeholder="What did you accomplish yesterday?"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Today's Plan</label>
+                <textarea id="today-plan"
+                          name="today_plan"
+                          rows="3"
+                          placeholder="What are you planning to work on today?"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Blockers</label>
+                <textarea id="blockers"
+                          name="blockers"
+                          rows="2"
+                          placeholder="Any blockers or impediments?"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Remarks / Notes (Optional)</label>
+                <textarea id="remarks"
+                          name="remarks"
+                          rows="2"
+                          placeholder="Additional notes or comments"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
+              </div>
+
+              <div class="flex justify-end space-x-3 pt-4">
+                <button type="button"
+                        id="cancel-btn"
+                        class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                  Cancel
+                </button>
+                <button type="submit"
+                        id="save-btn"
+                        class="px-4 py-2 text-white rounded-lg transition-colors"
+                        style="background-color:#1A2238;">
+                  <span id="save-text">Save Update</span>
+                  <span id="save-loading" class="hidden">Saving...</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <script>
+    // --- CONFIG / STATE ---
+    const defaultConfig = {
+      portal_title: "Retail Team Scrum Portal",
+      team_name: "Retail Team",
+      meeting_duration: "15"
+    };
+
+    let currentData = [];
+    let timerInterval = null;
+    let timerSeconds = 0;
+    let isTimerRunning = false;
+
+    const teamMembers = {
+      "Amrit":   { department: "Management",   color: "#1E40AF" },
+      "Vihan":   { department: "Retail / MM",  color: "#10B981" },
+      "Maricel": { department: "E-commerce",   color: "#F59E0B" },
+      "Kunal":   { department: "Logistics",    color: "#2563EB" },
+      "Mehboob": { department: "Fulfillment",  color: "#8B5CF6" },
+      "Aaron":   { department: "Customer Exp", color: "#EF4444" }
+    };
+
+    function esc(str) {
+      return (str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // ---- dataSdk replacement that talks to /api/scrum on Vercel ----
+    window.dataSdk = {
+      _handler: null,
+
+      async init(handler) {
+        this._handler = handler;
+        const resp = await fetch("/api/scrum", { method: "GET" });
+
+        if (!resp.ok) {
+          console.error("GET /api/scrum failed", resp.status);
+          handler.onDataChanged([]);
+          return { isOk: false };
+        }
+
+        const json = await resp.json();
+        const rows = Array.isArray(json.data) ? json.data : [];
+
+        const mapped = rows.map(r => ({
+          id: r.Name,
+          date: r.Date_Of_Standup,
+          team_member: r.Team_Member_Name,
+          department: r.Department,
+          yesterday_work: r.Daily_Tasks,
+          today_plan: r.Today_s_Plan,
+          blockers: r.Issues_Encountered,
+          blocker_status: r.Blocker_Status,
+          blocker_resolution_note: r.Resolution_Note || "",
+          created_at: r.Created_At,
+          resolved_at: r.Resolved_At,
+          remarks: r.Remarks_Notes || "",
+          status: r.Blocker_Status === "Open" ? "active" : "cleared"
+        }));
+
+        handler.onDataChanged(mapped);
+        return { isOk: true };
+      },
+
+      async create(row) {
+        const resp = await fetch("/api/scrum", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(row)
+        });
+
+        if (!resp.ok) {
+          console.error("POST /api/scrum failed", resp.status);
+          return { isOk: false };
+        }
+
+        // reload after save
+        return this.init(this._handler);
+      }
+    };
+
+    const dataHandler = {
+      onDataChanged(data) {
+        currentData = data;
+        updateUI();
+      }
+    };
+
+    // ---- INIT ----
+    async function initializeApp() {
+      try {
+        const initResult = await window.dataSdk.init(dataHandler);
+        if (!initResult.isOk) {
+          console.error("Failed to init data");
+        }
+
+        setupEventListeners();
+        updateCurrentDate();
+        updateTimerDisplay();
+      } catch (err) {
+        console.error("Error initializing app:", err);
+      }
+    }
+
+    // ---- EVENT LISTENERS ----
+    function setupEventListeners() {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      document.getElementById('add-update-btn').addEventListener('click', openModal);
+      document.querySelector('.add-update-trigger')?.addEventListener('click', openModal);
+      document.getElementById('close-modal').addEventListener('click', closeModal);
+      document.getElementById('cancel-btn').addEventListener('click', closeModal);
+
+      document.getElementById('update-form').addEventListener('submit', handleFormSubmit);
+
+      document.getElementById('start-scrum-btn').addEventListener('click', toggleTimer);
+
+      document.getElementById('filter-member').addEventListener('change', applyFilters);
+      document.getElementById('filter-department').addEventListener('change', applyFilters);
+      document.getElementById('filter-date').addEventListener('change', applyFilters);
+
+      document.getElementById('summary-date').addEventListener('change', updateSummaryView);
+
+      document.getElementById('export-btn').addEventListener('click', exportSummary);
+
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('update-date').value = today;
+      document.getElementById('summary-date').value = today;
+      document.getElementById('filter-date').value = today;
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+
+      if (currentData.length >= 999) {
+        showToast("⚠️ Maximum limit of 999 updates reached. Please delete some updates first.", "error");
+        return;
+      }
+
+      const saveBtn = document.getElementById('save-btn');
+      const saveText = document.getElementById('save-text');
+      const saveLoading = document.getElementById('save-loading');
+
+      saveBtn.disabled = true;
+      saveText.classList.add('hidden');
+      saveLoading.classList.remove('hidden');
+
+      try {
+        const formData = new FormData(e.target);
+        const updateData = {
+          id: Date.now().toString(),
+          date: formData.get('date'),
+          team_member: formData.get('team_member'),
+          department: formData.get('department'),
+          yesterday_work: formData.get('yesterday_work') || '',
+          today_plan: formData.get('today_plan') || '',
+          blockers: formData.get('blockers') || '',
+          remarks: formData.get('remarks') || '',
+          status: 'active',
+          created_at: new Date().toISOString()
+        };
+
+        const result = await window.dataSdk.create(updateData);
+
+        if (result.isOk) {
+          closeModal();
+          showToast("✅ Update saved successfully!", "success");
+        } else {
+          showToast("❌ Failed to save update. Please try again.", "error");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("❌ An error occurred while saving.", "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveText.classList.remove('hidden');
+        saveLoading.classList.add('hidden');
+      }
+    }
+
+    // ---- UI RENDER ----
+    function updateUI() {
+      updateDashboard();
+      updateManagerPanel();
+      updateSummaryView();
+    }
+
+    function updateDashboard() {
+      const container = document.getElementById('team-updates');
+      const emptyState = document.getElementById('empty-state');
+      const today = new Date().toISOString().split('T')[0];
+
+      const todayUpdates = currentData.filter(update => update.date === today);
+
+      if (todayUpdates.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      const memberUpdates = {};
+      todayUpdates.forEach(update => {
+        if (!memberUpdates[update.team_member] ||
+            new Date(update.created_at) > new Date(memberUpdates[update.team_member].created_at)) {
+          memberUpdates[update.team_member] = update;
+        }
+      });
+
+      container.innerHTML = Object.values(memberUpdates).map(createUpdateCard).join('');
+    }
+
+    function createUpdateCard(update) {
+      const member = teamMembers[update.team_member] || { department: update.department, color: '#6B7280' };
+      const hasBlockers = update.blockers && update.blockers.trim().length > 0;
+      const initials = update.team_member.split(' ').map(n => n[0]).join('');
+
+      return `
+        <div class="scrum-card bg-white rounded-lg shadow-sm p-6 ${hasBlockers ? "blocker-urgent" : ""}">
+          <div class="flex items-center mb-4">
+            <div class="relative">
+              <div class="avatar" style="background-color:${member.color};">${esc(initials)}</div>
+              <div class="status-indicator bg-green-400"></div>
+            </div>
+            <div class="ml-3 flex-1">
+              <h3 class="font-semibold text-gray-900">${esc(update.team_member)}</h3>
+              <span class="department-tag text-white" style="background-color:${member.color};">
+                ${esc(update.department)}
+              </span>
+            </div>
+            <div class="text-xs text-gray-500">
+              ${new Date(update.created_at).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">✅ Yesterday's Work</h4>
+              <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                ${esc(update.yesterday_work || "No updates provided")}
+              </p>
+            </div>
+
+            <div>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">🎯 Today's Plan</h4>
+              <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                ${esc(update.today_plan || "No plans specified")}
+              </p>
+            </div>
+
+            ${hasBlockers ? `
+              <div>
+                <h4 class="text-sm font-medium text-red-700 mb-2">⚠️ Blockers</h4>
+                <p class="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+                  ${esc(update.blockers)}
+                </p>
+              </div>
+            ` : ""}
+
+            ${update.remarks ? `
+              <div>
+                <h4 class="text-sm font-medium text-gray-700 mb-2">💬 Remarks</h4>
+                <p class="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+                  ${esc(update.remarks)}
+                </p>
+              </div>
+            ` : ""}
+          </div>
+        </div>
+      `;
+    }
+
+    function updateSummaryView() {
+      const selectedDate = document.getElementById('summary-date').value;
+      const container = document.getElementById('summary-content');
+      if (!selectedDate) return;
+
+      const dayUpdates = currentData.filter(update => update.date === selectedDate);
+
+      if (dayUpdates.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <span class="text-2xl">📅</span>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No updates for this date</h3>
+            <p class="text-gray-500">Select a different date or add updates for ${esc(selectedDate)}</p>
+          </div>
+        `;
+        return;
+      }
+
+      const memberGroups = {};
+      dayUpdates.forEach(update => {
+        if (!memberGroups[update.team_member]) {
+          memberGroups[update.team_member] = [];
+        }
+        memberGroups[update.team_member].push(update);
+      });
+
+      container.innerHTML = `
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            Standup Summary - ${
+              new Date(selectedDate).toLocaleDateString("en-US", {
+                weekday:"long", year:"numeric", month:"long", day:"numeric"
+              })
+            }
+          </h3>
+          ${
+            Object.entries(memberGroups).map(([member, updates]) => {
+              const latestUpdate = updates.sort(
+                (a,b) => new Date(b.created_at) - new Date(a.created_at)
+              )[0];
+              const memberInfo = teamMembers[member] || {
+                department: latestUpdate.department,
+                color: "#6B7280"
+              };
+
+              return `
+                <div class="border-l-4 pl-4 mb-6" style="border-color:${memberInfo.color};">
+                  <div class="flex items-center mb-3">
+                    <h4 class="font-medium text-gray-900">${esc(member)}</h4>
+                    <span class="ml-2 text-xs px-2 py-1 rounded-full text-white"
+                          style="background-color:${memberInfo.color};">
+                      ${esc(latestUpdate.department)}
+                    </span>
+                  </div>
+
+                  <div class="grid md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <strong class="text-gray-700">Yesterday:</strong>
+                      <p class="text-gray-600 mt-1">${esc(latestUpdate.yesterday_work || "No updates")}</p>
+                    </div>
+                    <div>
+                      <strong class="text-gray-700">Today:</strong>
+                      <p class="text-gray-600 mt-1">${esc(latestUpdate.today_plan || "No plans")}</p>
+                    </div>
+                    <div>
+                      <strong class="text-gray-700">Blockers:</strong>
+                      <p class="text-gray-600 mt-1 ${latestUpdate.blockers ? "text-red-600" : ""}">
+                        ${esc(latestUpdate.blockers || "None")}
+                      </p>
+                    </div>
+                  </div>
+
+                  ${latestUpdate.remarks ? `
+                    <div class="mt-2 text-sm">
+                      <strong class="text-gray-700">Remarks:</strong>
+                      <p class="text-gray-600 mt-1">${esc(latestUpdate.remarks)}</p>
+                    </div>
+                  ` : ""}
+                </div>
+              `;
+            }).join("")
+          }
+        </div>
+      `;
+    }
+
+    function updateManagerPanel() {
+      populateFilterDropdowns();
+      applyFilters();
+    }
+
+    function populateFilterDropdowns() {
+      const memberSelect = document.getElementById('filter-member');
+      const currentMembers = [...new Set(currentData.map(update => update.team_member))];
+
+      memberSelect.innerHTML =
+        '<option value="">All Team Members</option>' +
+        currentMembers.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+    }
+
+    function applyFilters() {
+      const memberFilter = document.getElementById('filter-member').value;
+      const departmentFilter = document.getElementById('filter-department').value;
+      const dateFilter = document.getElementById('filter-date').value;
+
+      let filteredData = currentData;
+
+      if (memberFilter) {
+        filteredData = filteredData.filter(u => u.team_member === memberFilter);
+      }
+      if (departmentFilter) {
+        filteredData = filteredData.filter(u => u.department === departmentFilter);
+      }
+      if (dateFilter) {
+        filteredData = filteredData.filter(u => u.date === dateFilter);
+      }
+
+      displayManagerContent(filteredData);
+    }
+
+    function displayManagerContent(data) {
+      const container = document.getElementById('manager-content');
+      const blockerArea = document.getElementById('blocker-escalation-area');
+
+      if (data.length === 0) {
+        blockerArea.innerHTML = "";
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <span class="text-2xl">🔍</span>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No updates match your filters</h3>
+            <p class="text-gray-500">Try adjusting your filter criteria</p>
+          </div>
+        `;
+        return;
+      }
+
+      const totalUpdates = data.length;
+      const uniqueMembers = new Set(data.map(u => u.team_member)).size;
+      const openBlockers = data.filter(u => u.blockers && u.blockers.trim());
+
+      if (openBlockers.length) {
+        blockerArea.innerHTML = `
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="text-red-700 font-semibold mb-2">🚨 Blockers to clear:</div>
+            <ul class="text-sm text-red-700 list-disc pl-5 space-y-1">
+              ${
+                openBlockers.map(b => `
+                  <li>
+                    <span class="font-medium">${esc(b.team_member)}</span>
+                    (${esc(b.department)}):
+                    ${esc(b.blockers)}
+                  </li>
+                `).join("")
+              }
+            </ul>
+          </div>
+        `;
+      } else {
+        blockerArea.innerHTML = "";
+      }
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white p-4 rounded-lg shadow-sm">
+            <div class="text-2xl font-bold text-blue-600">${totalUpdates}</div>
+            <div class="text-sm text-gray-600">Total Updates</div>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-sm">
+            <div class="text-2xl font-bold text-green-600">${uniqueMembers}</div>
+            <div class="text-sm text-gray-600">Active Members</div>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-sm">
+            <div class="text-2xl font-bold text-red-600">${openBlockers.length}</div>
+            <div class="text-sm text-gray-600">Active Blockers</div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          ${
+            data.map(update => {
+              const memberInfo = teamMembers[update.team_member] ||
+                { department: update.department, color: "#6B7280" };
+              const hasBlockers = update.blockers && update.blockers.trim();
+
+              return `
+                <div class="bg-white rounded-lg shadow-sm p-4 ${hasBlockers ? "border-l-4 border-red-400" : ""}">
+                  <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center">
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                           style="background-color:${memberInfo.color};">
+                        ${esc(update.team_member.split(" ").map(n => n[0]).join(""))}
+                      </div>
+                      <div class="ml-3">
+                        <h4 class="font-medium text-gray-900">${esc(update.team_member)}</h4>
+                        <p class="text-sm text-gray-500">
+                          ${esc(update.department)} • ${new Date(update.date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    ${hasBlockers ? '<span class="text-red-500 text-sm font-medium">⚠️ Has Blockers</span>' : ""}
+                  </div>
+
+                  <div class="grid md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <strong class="text-gray-700">Yesterday:</strong>
+                      <p class="text-gray-600 mt-1">${esc(update.yesterday_work || "No updates")}</p>
+                    </div>
+                    <div>
+                      <strong class="text-gray-700">Today:</strong>
+                      <p class="text-gray-600 mt-1">${esc(update.today_plan || "No plans")}</p>
+                    </div>
+                  </div>
+
+                  ${hasBlockers ? `
+                    <div class="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                      <strong class="text-red-700">Blockers:</strong>
+                      <p class="text-red-600 mt-1">${esc(update.blockers)}</p>
+                    </div>
+                  ` : ""}
+                </div>
+              `;
+            }).join("")
+          }
+        </div>
+      `;
+    }
+
+    // ---- EXPORT CSV ----
+    function exportSummary() {
+      const selectedDate = document.getElementById('summary-date').value;
+      if (!selectedDate) {
+        showToast("⚠️ Please select a date to export", "error");
+        return;
+      }
+
+      const dayUpdates = currentData.filter(update => update.date === selectedDate);
+      if (dayUpdates.length === 0) {
+        showToast("⚠️ No updates found for the selected date", "error");
+        return;
+      }
+
+      const headers = [
+        "Team Member",
+        "Department",
+        "Yesterday Work",
+        "Today Plan",
+        "Blockers",
+        "Remarks"
+      ];
+
+      const csvContent = [
+        headers.join(","),
+        ...dayUpdates.map(update => [
+          `"${update.team_member}"`,
+          `"${update.department}"`,
+          `"${(update.yesterday_work || "").replace(/"/g,'""')}"`,
+          `"${(update.today_plan || "").replace(/"/g,'""')}"`,
+          `"${(update.blockers || "").replace(/"/g,'""')}"`,
+          `"${(update.remarks || "").replace(/"/g,'""')}"`
+        ].join(","))
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `scrum-summary-${selectedDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      showToast("📄 Summary exported successfully!", "success");
+    }
+
+    // ---- OTHER HELPERS ----
+    function updateCurrentDate() {
+      const now = new Date();
+      const options = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+      document.getElementById('current-date').textContent =
+        now.toLocaleDateString('en-US', options);
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('start-scrum-btn');
+      const timerDisplay = document.getElementById('timer-display');
+
+      if (!isTimerRunning) {
+        timerSeconds = parseInt(defaultConfig.meeting_duration) * 60;
+        isTimerRunning = true;
+        btn.textContent = "⏹️ Stop Scrum";
+        btn.classList.add("timer-active");
+        timerDisplay.classList.remove("hidden");
+
+        timerInterval = setInterval(() => {
+          timerSeconds--;
+          updateTimerDisplay();
+          if (timerSeconds <= 0) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            btn.textContent = "🚀 Start Scrum";
+            btn.classList.remove("timer-active");
+            showToast("⏰ Scrum meeting time completed!", "success");
+          }
+        }, 1000);
+      } else {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        btn.textContent = "🚀 Start Scrum";
+        btn.classList.remove("timer-active");
+        timerDisplay.classList.add("hidden");
+      }
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timerSeconds / 60);
+      const seconds = timerSeconds % 60;
+      const display = `${minutes.toString().padStart(2,"0")}:${seconds.toString().padStart(2,"0")}`;
+      document.getElementById("timer-text").textContent = display;
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.remove("active");
+        btn.style.borderColor = "transparent";
+        btn.style.color = "#6B7280";
+      });
+
+      const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+      activeBtn.classList.add("active");
+      activeBtn.style.borderColor = "#FFD400";
+      activeBtn.style.color = "#1A2238";
+
+      document.querySelectorAll(".tab-content").forEach(content => {
+        content.classList.add("hidden");
+      });
+      document.getElementById(`${tabName}-tab`).classList.remove("hidden");
+
+      if (tabName === "summary") {
+        updateSummaryView();
+      } else if (tabName === "manager") {
+        updateManagerPanel();
+      }
+    }
+
+    function showToast(message, type="info") {
+      const toast = document.createElement("div");
+      toast.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
+
+      const colors = {
+        success: "bg-green-500",
+        error:   "bg-red-500",
+        info:    "bg-blue-500"
+      };
+
+      toast.classList.add(colors[type] || colors.info);
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove("translate-x-full");
+      }, 100);
+
+      setTimeout(() => {
+        toast.classList.add("translate-x-full");
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+
+    document.addEventListener("DOMContentLoaded", initializeApp);
+  </script>
+</body>
+</html>
