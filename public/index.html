@@ -4,154 +4,263 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Retail Team Scrum Portal</title>
-
-  <!-- Tailwind (ok for now; can optimize later) -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Supabase JS v2 (UMD) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
   <style>
-    body {
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-      background-color: #F4F4F4;
+    :root {
+      --brand-bg: #050816;
+      --brand-accent: #3b82f6;
+      --brand-accent-soft: rgba(59,130,246,0.12);
+      --brand-accent-2: #22c55e;
+      --brand-accent-3: #a855f7;
+      --radius-xl: 22px;
     }
-    .scrum-card { transition: all 0.3s ease; border-left: 4px solid #FFD400; }
-    .scrum-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-    .department-tag { font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 500; }
-    .blocker-urgent { border-left-color: #EF4444; background: linear-gradient(90deg, rgba(239,68,68,0.05) 0%, transparent 100%); }
-    .timer-active { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.7;} }
-    .avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; color:white; font-size:14px; }
-    .status-indicator { width:12px; height:12px; border-radius:50%; border:2px solid white; position:absolute; bottom:-2px; right:-2px; }
-    .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-    @view-transition { navigation: auto; }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #020817;
+      color: #0f172a;
+    }
+
+    .glass {
+      background: rgba(15,23,42,0.9);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(148,163,253,0.08);
+    }
+
+    .scrum-card {
+      transition: all 0.18s ease;
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,253,0.14);
+      background: radial-gradient(circle at top left, rgba(59,130,246,0.06), transparent),
+                  #020817;
+    }
+    .scrum-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 45px rgba(15,23,42,0.55);
+      border-color: rgba(59,130,246,0.5);
+    }
+
+    .department-pill {
+      font-size: 0.68rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,253,0.35);
+      color: #e5e7eb;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: white;
+      font-size: 0.8rem;
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 2px solid #020817;
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+    }
+
+    .modal-overlay {
+      background: rgba(2,6,23,0.82);
+      backdrop-filter: blur(14px);
+    }
+
+    .pill {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: #9ca3af;
+      transition: all 0.16s ease;
+      background: rgba(15,23,42,0.88);
+    }
+    .pill span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+    }
+    .pill.active {
+      color: #f9fafb;
+      border-color: rgba(59,130,246,0.9);
+      box-shadow: 0 0 22px rgba(59,130,246,0.22);
+      background: radial-gradient(circle at top, rgba(79,70,229,0.28), rgba(15,23,42,1));
+    }
+
+    .timer-active {
+      box-shadow: 0 0 14px rgba(34,197,94,0.6);
+    }
   </style>
 </head>
-<body class="min-h-full">
-  <div id="app" class="min-h-full">
-    <!-- HEADER -->
-    <header style="background-color:#1A2238;" class="text-white shadow-lg">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-4">
-          <div class="flex items-center space-x-4">
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg"
-                 style="background-color:#FFD400;color:#1A2238;">
-              S
+<body class="min-h-screen text-slate-100">
+  <div id="app" class="min-h-screen">
+    <!-- TOP BAR -->
+    <header class="w-full border-b border-slate-800 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-500
+                      flex items-center justify-center font-extrabold text-slate-900 text-lg shadow-lg">
+            S
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 id="portal-title" class="text-lg sm:text-xl font-semibold tracking-tight">
+                Retail Team Scrum Portal
+              </h1>
+              <span class="text-[0.7rem] px-2 py-0.5 rounded-full bg-slate-900/80 border border-indigo-500/40 text-indigo-300">
+                live
+              </span>
             </div>
-            <div>
-              <h1 id="portal-title" class="text-xl font-bold">Retail Team Scrum Portal</h1>
-              <p class="text-sm opacity-75" id="current-date"></p>
-            </div>
+            <p id="current-date" class="text-xs text-slate-400"></p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div id="timer-display"
+               class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/85 border border-slate-700 text-xs">
+            <span class="text-slate-400">Standup timer</span>
+            <span id="timer-text" class="font-semibold text-emerald-400">15:00</span>
           </div>
 
-          <div class="flex items-center space-x-4">
-            <div id="timer-display" class="hidden bg-white bg-opacity-20 px-4 py-2 rounded-lg">
-              <span class="text-sm font-medium">Meeting Timer: </span>
-              <span id="timer-text" class="font-bold">15:00</span>
-            </div>
+          <button id="start-scrum-btn"
+                  class="px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500
+                         text-xs font-semibold text-slate-950 shadow-md hover:shadow-blue-500/30
+                         transition-all flex items-center gap-1.5">
+            🚀 Start Scrum
+          </button>
 
-            <button id="start-scrum-btn"
-                    class="px-4 py-2 rounded-lg font-medium transition-colors"
-                    style="background-color:#FFD400;color:#1A2238;">
-              🚀 Start Scrum
-            </button>
+          <button id="add-update-btn"
+                  class="px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-xs
+                         font-medium text-slate-200 hover:border-indigo-500/70 hover:text-indigo-300
+                         flex items-center gap-1.5 transition-all">
+            ➕ <span>Add update</span>
+          </button>
+        </div>
+      </div>
 
-            <button id="add-update-btn"
-                    class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg font-medium transition-colors">
-              ➕ Add Update
-            </button>
-          </div>
+      <!-- TABS & PILLS -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-4 text-xs">
+          <button class="tab-btn pill active" data-tab="dashboard">
+            <span class="dot bg-blue-500"></span> Board
+          </button>
+          <button class="tab-btn pill" data-tab="summary">
+            <span class="dot bg-emerald-400"></span> Summary
+          </button>
+          <button class="tab-btn pill" data-tab="manager">
+            <span class="dot bg-violet-400"></span> Manager view
+          </button>
+        </div>
+
+        <div class="hidden md:flex items-center gap-2 text-[0.68rem] text-slate-500">
+          <span class="px-2 py-0.5 rounded-full bg-slate-900/80 border border-slate-700">
+            ⏱️ 15-min async+live standup
+          </span>
+          <span class="px-2 py-0.5 rounded-full bg-slate-900/80 border border-slate-700">
+            🔐 Backed by Supabase
+          </span>
         </div>
       </div>
     </header>
 
-    <!-- TABS -->
-    <nav class="bg-white shadow-sm border-b">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex space-x-8">
-          <button class="tab-btn active py-4 px-2 border-b-2 font-medium text-sm transition-colors"
-                  data-tab="dashboard"
-                  style="border-color:#FFD400;color:#1A2238;">
-            📊 Team Dashboard
-          </button>
-          <button class="tab-btn py-4 px-2 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                  data-tab="summary">
-            📋 Meeting Summary
-          </button>
-          <button class="tab-btn py-4 px-2 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                  data-tab="manager">
-            👨‍💼 Manager Panel
-          </button>
-        </div>
-      </div>
-    </nav>
-
     <!-- MAIN -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <!-- DASHBOARD TAB -->
-      <div id="dashboard-tab" class="tab-content">
-        <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-2">Today's Standup</h2>
-          <p class="text-gray-600">Track daily progress across all team members</p>
+      <section id="dashboard-tab" class="tab-content">
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-slate-50">Today's standup</h2>
+            <p class="text-xs text-slate-400">
+              Quick visual of what everyone is doing, in a clean board-style layout.
+            </p>
+          </div>
         </div>
 
-        <div id="team-updates" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
+        <div id="team-updates" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
 
-        <div id="empty-state" class="text-center py-12">
-          <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-               style="background-color:#FFD400;">
-            <span class="text-2xl">📝</span>
+        <div id="empty-state"
+             class="mt-8 flex flex-col items-center justify-center gap-3 py-10
+                    glass rounded-3xl border border-dashed border-slate-700">
+          <div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-2xl">
+            📝
           </div>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No updates yet today</h3>
-          <p class="text-gray-500 mb-4">Start by adding the first daily update</p>
-          <button class="add-update-trigger px-4 py-2 rounded-lg font-medium"
-                  style="background-color:#FFD400;color:#1A2238;">
-            Add First Update
+          <h3 class="text-sm font-medium text-slate-100">No updates yet for today</h3>
+          <p class="text-xs text-slate-400">Kick things off by adding the first standup entry.</p>
+          <button class="add-update-trigger px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500
+                         text-xs font-semibold text-slate-950 shadow hover:shadow-blue-500/30 transition-all">
+            Add first update
           </button>
         </div>
-      </div>
+      </section>
 
       <!-- SUMMARY TAB -->
-      <div id="summary-tab" class="tab-content hidden">
-        <div class="mb-6 flex justify-between items-center">
+      <section id="summary-tab" class="tab-content hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Meeting Summary</h2>
-            <p class="text-gray-600">View and export daily standup summaries</p>
+            <h2 class="text-base sm:text-lg font-semibold text-slate-50">Daily summary</h2>
+            <p class="text-xs text-slate-400">
+              Snapshot by person for a specific date. Perfect for leadership recap.
+            </p>
           </div>
-          <div class="flex space-x-3">
+          <div class="flex items-center gap-2">
             <input type="date"
                    id="summary-date"
-                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                   class="px-3 py-1.5 text-xs rounded-full bg-slate-950 border border-slate-700
+                          text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             <button id="export-btn"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-              📄 Export Summary
+                    class="px-3 py-1.5 rounded-full bg-emerald-500/95 hover:bg-emerald-400
+                           text-[0.7rem] font-semibold text-slate-950 flex items-center gap-1.5">
+              📄 Export CSV
             </button>
           </div>
         </div>
-        <div id="summary-content" class="space-y-6"></div>
-      </div>
+        <div id="summary-content" class="space-y-4"></div>
+      </section>
 
       <!-- MANAGER TAB -->
-      <div id="manager-tab" class="tab-content hidden">
-        <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-2">Manager Control Panel</h2>
-          <p class="text-gray-600">Filter, analyze, and provide feedback on team updates</p>
+      <section id="manager-tab" class="tab-content hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-slate-50">Manager view</h2>
+            <p class="text-xs text-slate-400">
+              Filter by member, department or date. Quickly see blockers and activity.
+            </p>
+          </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="glass rounded-3xl p-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <select id="filter-member"
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
-              <option value="">All Team Members</option>
+                    class="w-full px-3 py-1.5 text-xs rounded-full bg-slate-950 border border-slate-700
+                           text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <option value="">All team members</option>
             </select>
 
             <select id="filter-department"
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
-              <option value="">All Departments</option>
+                    class="w-full px-3 py-1.5 text-xs rounded-full bg-slate-950 border border-slate-700
+                           text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <option value="">All departments</option>
               <option value="Management">Management</option>
               <option value="Retail / MM">Retail / MM</option>
               <option value="E-commerce">E-commerce</option>
@@ -162,260 +271,303 @@
 
             <input type="date"
                    id="filter-date"
-                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400">
+                   class="w-full px-3 py-1.5 text-xs rounded-full bg-slate-950 border border-slate-700
+                          text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500" />
           </div>
 
-          <div id="blocker-escalation-area"></div>
+          <div id="blocker-escalation-area" class="text-xs"></div>
         </div>
 
-        <div id="manager-content" class="space-y-4"></div>
-      </div>
+        <div id="manager-content" class="space-y-3"></div>
+      </section>
     </main>
 
-    <!-- MODAL -->
-    <div id="update-modal" class="fixed inset-0 z-50 hidden modal-overlay">
-      <div class="flex items-center justify-center min-h-screen px-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
-          <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-              <h3 class="text-lg font-semibold text-gray-900">Daily Standup Update</h3>
-              <button id="close-modal" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
-            </div>
-
-            <form id="update-form" class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                  <input type="date"
-                         id="update-date"
-                         name="date"
-                         required
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Team Member</label>
-                  <select id="team-member"
-                          name="team_member"
-                          required
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                    <option value="">Select team member</option>
-                    <option value="Amrit">Amrit</option>
-                    <option value="Vihan">Vihan</option>
-                    <option value="Maricel">Maricel</option>
-                    <option value="Kunal">Kunal</option>
-                    <option value="Mehboob">Mehboob</option>
-                    <option value="Aaron">Aaron</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <select id="department"
-                        name="department"
-                        required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                  <option value="">Select department</option>
-                  <option value="Management">Management</option>
-                  <option value="Retail / MM">Retail / MM</option>
-                  <option value="E-commerce">E-commerce</option>
-                  <option value="Logistics">Logistics</option>
-                  <option value="Fulfillment">Fulfillment</option>
-                  <option value="Customer Exp">Customer Exp</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Yesterday's Work</label>
-                <textarea id="yesterday-work"
-                          name="yesterday_work"
-                          rows="3"
-                          placeholder="What did you accomplish yesterday?"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Today's Plan</label>
-                <textarea id="today-plan"
-                          name="today_plan"
-                          rows="3"
-                          placeholder="What are you planning to work on today?"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus-border-transparent resize-none"></textarea>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Blockers</label>
-                <textarea id="blockers"
-                          name="blockers"
-                          rows="2"
-                          placeholder="Any blockers or impediments?"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Remarks / Notes (Optional)</label>
-                <textarea id="remarks"
-                          name="remarks"
-                          rows="2"
-                          placeholder="Additional notes or comments"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
-              </div>
-
-              <div class="flex justify-end space-x-3 pt-4">
-                <button type="button"
-                        id="cancel-btn"
-                        class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                  Cancel
-                </button>
-                <button type="submit"
-                        id="save-btn"
-                        class="px-4 py-2 text-white rounded-lg transition-colors"
-                        style="background-color:#1A2238;">
-                  <span id="save-text">Save Update</span>
-                  <span id="save-loading" class="hidden">Saving...</span>
-                </button>
-              </div>
-
-            </form>
+    <!-- CREATE / EDIT MODAL -->
+    <div id="update-modal"
+         class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center px-3">
+      <div class="glass rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 id="modal-title" class="text-sm font-semibold text-slate-50">
+              New standup update
+            </h3>
+            <p class="text-[0.7rem] text-slate-500">
+              Capture yesterday, today, and blockers in one quick form.
+            </p>
           </div>
+          <button id="close-modal"
+                  class="w-7 h-7 rounded-full bg-slate-900 flex items-center justify-center
+                         text-slate-400 hover:text-red-400 hover:bg-slate-800 text-sm">
+            ✕
+          </button>
         </div>
+
+        <form id="update-form" class="space-y-3 text-[0.72rem]">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block mb-1 text-slate-400">Date</label>
+              <input type="date" id="update-date" name="date" required
+                     class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
+                            text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="block mb-1 text-slate-400">Team member</label>
+              <select id="team-member" name="team_member" required
+                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
+                             text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option value="">Select</option>
+                <option value="Amrit">Amrit</option>
+                <option value="Vihan">Vihan</option>
+                <option value="Maricel">Maricel</option>
+                <option value="Kunal">Kunal</option>
+                <option value="Mehboob">Mehboob</option>
+                <option value="Aaron">Aaron</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-slate-400">Department</label>
+            <select id="department" name="department" required
+                    class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
+                           text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <option value="">Select department</option>
+              <option value="Management">Management</option>
+              <option value="Retail / MM">Retail / MM</option>
+              <option value="E-commerce">E-commerce</option>
+              <option value="Logistics">Logistics</option>
+              <option value="Fulfillment">Fulfillment</option>
+              <option value="Customer Exp">Customer Exp</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-slate-400">Yesterday's work</label>
+            <textarea id="yesterday-work" name="yesterday_work" rows="2"
+                      placeholder="What did you complete?"
+                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
+                             text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-slate-400">Today's plan</label>
+            <textarea id="today-plan" name="today_plan" rows="2"
+                      placeholder="What will you work on?"
+                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
+                             text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-slate-400">Blockers</label>
+            <textarea id="blockers" name="blockers" rows="2"
+                      placeholder="Any risks, delays, dependencies?"
+                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
+                             text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-rose-500/70"></textarea>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-slate-400">Remarks / notes</label>
+            <textarea id="remarks" name="remarks" rows="2"
+                      placeholder="Optional context for leads"
+                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
+                             text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+          </div>
+
+          <div class="flex justify-between items-center pt-2 gap-3">
+            <button type="button" id="cancel-btn"
+                    class="px-3 py-1.5 rounded-full bg-slate-900 text-slate-400 text-[0.7rem]
+                           hover:bg-slate-800 hover:text-slate-200">
+              Cancel
+            </button>
+            <div class="flex items-center gap-2">
+              <span id="edit-hint"
+                    class="hidden text-[0.65rem] px-2 py-0.5 rounded-full bg-slate-900 text-amber-300 border border-amber-500/40">
+                Editing existing entry
+              </span>
+              <button type="submit" id="save-btn"
+                      class="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500
+                             text-[0.7rem] font-semibold text-slate-950 flex items-center gap-1.5
+                             hover:shadow-lg hover:shadow-blue-500/40 transition-all">
+                <span id="save-text">Save update</span>
+                <span id="save-loading" class="hidden">Saving…</span>
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
-  </div><!-- /app -->
+  </div>
 
+  <!-- SCRIPT -->
   <script>
-    // ---------- BASIC CONFIG ----------
+    // ================== CONFIG ==================
     const defaultConfig = {
-      portal_title: "Retail Team Scrum Portal",
-      team_name: "Retail Team",
-      meeting_duration: "15",
+      meeting_duration: 15
+    };
+
+    // TODO: set these to your actual Supabase project values
+    const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
+
+    const supabaseHeaders = {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    };
+
+    const teamMembers = {
+      "Amrit":   { department: "Management",   color: "#38bdf8" },
+      "Vihan":   { department: "Retail / MM",  color: "#22c55e" },
+      "Maricel": { department: "E-commerce",   color: "#fb923c" },
+      "Kunal":   { department: "Logistics",    color: "#6366f1" },
+      "Mehboob": { department: "Fulfillment",  color: "#a855f7" },
+      "Aaron":   { department: "Customer Exp", color: "#f97316" }
     };
 
     let currentData = [];
     let timerInterval = null;
     let timerSeconds = 0;
     let isTimerRunning = false;
-
-    const teamMembers = {
-      "Amrit":   { department: "Management",   color: "#1E40AF" },
-      "Vihan":   { department: "Retail / MM",  color: "#10B981" },
-      "Maricel": { department: "E-commerce",   color: "#F59E0B" },
-      "Kunal":   { department: "Logistics",    color: "#2563EB" },
-      "Mehboob": { department: "Fulfillment",  color: "#8B5CF6" },
-      "Aaron":   { department: "Customer Exp", color: "#EF4444" },
-    };
+    let activeEditId = null;
 
     function esc(str) {
       return (str || "")
+        .toString()
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
     }
 
-    // ---------- SUPABASE CLIENT ----------
-    const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co"; // your Supabase project URL
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg"; // <-- IMPORTANT
-
-    const supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
-    );
-
-    // ---------- DATA SDK USING SUPABASE ----------
+    // ============ Supabase data SDK ============
     window.dataSdk = {
       _handler: null,
 
       async init(handler) {
         this._handler = handler;
 
-        const { data, error } = await supabaseClient
-          .from("scrum_updates")
-          .select("id, standup_date, team_member, department, yesterday_work, today_plan, blockers, remarks, status, created_at")
-          .order("created_at", { ascending: false });
+        const url =
+          `${SUPABASE_URL}/rest/v1/scrum_updates` +
+          `?select=id,date,team_member,department,yesterday_work,today_plan,blockers,remarks,created_at` +
+          `&order=date.desc,created_at.desc`;
 
-        if (error) {
-          console.error("Supabase SELECT failed:", error);
+        try {
+          const resp = await fetch(url, { headers: supabaseHeaders });
+          if (!resp.ok) {
+            console.error("Supabase GET failed", await resp.text());
+            handler.onDataChanged([]);
+            return { isOk: false };
+          }
+          const rows = await resp.json();
+
+          const mapped = rows.map(r => ({
+            id: r.id,
+            date: r.date,
+            team_member: r.team_member,
+            department: r.department,
+            yesterday_work: r.yesterday_work,
+            today_plan: r.today_plan,
+            blockers: r.blockers,
+            remarks: r.remarks,
+            created_at: r.created_at
+          }));
+
+          handler.onDataChanged(mapped);
+          return { isOk: true };
+        } catch (err) {
+          console.error("Supabase init error", err);
           handler.onDataChanged([]);
           return { isOk: false };
         }
-
-        const mapped = (data || []).map(r => ({
-          id: r.id,
-          date: r.standup_date,
-          team_member: r.team_member,
-          department: r.department,
-          yesterday_work: r.yesterday_work,
-          today_plan: r.today_plan,
-          blockers: r.blockers,
-          remarks: r.remarks,
-          status: r.status || "active",
-          created_at: r.created_at,
-        }));
-
-        handler.onDataChanged(mapped);
-        return { isOk: true };
       },
 
       async create(row) {
-        const payload = {
-          id: row.id,
-          standup_date: row.date,
-          team_member: row.team_member,
-          department: row.department,
-          yesterday_work: row.yesterday_work,
-          today_plan: row.today_plan,
-          blockers: row.blockers,
-          remarks: row.remarks,
-          status: row.status || "active",
-          created_at: row.created_at,
-        };
+        try {
+          const resp = await fetch(
+            `${SUPABASE_URL}/rest/v1/scrum_updates`,
+            {
+              method: "POST",
+              headers: supabaseHeaders,
+              body: JSON.stringify(row)
+            }
+          );
 
-        const { error } = await supabaseClient
-          .from("scrum_updates")
-          .insert(payload);
+          if (!resp.ok) {
+            console.error("Supabase INSERT failed:", await resp.text());
+            return { isOk: false };
+          }
 
-        if (error) {
-          console.error("Supabase INSERT failed:", error);
+          await this.init(this._handler);
+          return { isOk: true };
+        } catch (err) {
+          console.error("Supabase create error", err);
           return { isOk: false };
         }
-
-        return this.init(this._handler);
       },
+
+      async update(id, partial) {
+        try {
+          const resp = await fetch(
+            `${SUPABASE_URL}/rest/v1/scrum_updates?id=eq.${encodeURIComponent(id)}`,
+            {
+              method: "PATCH",
+              headers: supabaseHeaders,
+              body: JSON.stringify(partial)
+            }
+          );
+
+          if (!resp.ok) {
+            console.error("Supabase UPDATE failed:", await resp.text());
+            return { isOk: false };
+          }
+
+          await this.init(this._handler);
+          return { isOk: true };
+        } catch (err) {
+          console.error("Supabase update error", err);
+          return { isOk: false };
+        }
+      }
     };
 
     const dataHandler = {
       onDataChanged(data) {
         currentData = data;
         updateUI();
-      },
+      }
     };
 
-    // ---------- INIT ----------
-    async function initializeApp() {
-      try {
-        const initResult = await window.dataSdk.init(dataHandler);
-        if (!initResult.isOk) {
-          console.error("Failed to init data");
-        }
+    // ============ INIT ============
+    document.addEventListener("DOMContentLoaded", initializeApp);
 
-        setupEventListeners();
-        updateCurrentDate();
-        updateTimerDisplay();
-      } catch (err) {
-        console.error("Error initializing app:", err);
+    async function initializeApp() {
+      updateCurrentDate();
+      updateTimerDisplay();
+      setupStaticListeners();
+
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("update-date").value = today;
+      document.getElementById("summary-date").value = today;
+      document.getElementById("filter-date").value = today;
+
+      const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        console.error("Failed to init data from Supabase");
       }
     }
 
-    // ---------- EVENT LISTENERS ----------
-    function setupEventListeners() {
+    // ============ LISTENERS ============
+    function setupStaticListeners() {
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", () => switchTab(btn.dataset.tab));
       });
 
-      document.getElementById("add-update-btn").addEventListener("click", openModal);
-      document.querySelector(".add-update-trigger")?.addEventListener("click", openModal);
+      document.getElementById("add-update-btn")
+        .addEventListener("click", () => openModal());
+      document.querySelector(".add-update-trigger")
+        ?.addEventListener("click", () => openModal());
+
       document.getElementById("close-modal").addEventListener("click", closeModal);
       document.getElementById("cancel-btn").addEventListener("click", closeModal);
 
@@ -429,18 +581,14 @@
 
       document.getElementById("summary-date").addEventListener("change", updateSummaryView);
       document.getElementById("export-btn").addEventListener("click", exportSummary);
-
-      const today = new Date().toISOString().split("T")[0];
-      document.getElementById("update-date").value = today;
-      document.getElementById("summary-date").value = today;
-      document.getElementById("filter-date").value = today;
     }
 
+    // ============ FORM SUBMIT (CREATE / EDIT) ============
     async function handleFormSubmit(e) {
       e.preventDefault();
 
       if (currentData.length >= 999) {
-        showToast("⚠️ Maximum limit of 999 updates reached. Please delete some updates first.", "error");
+        showToast("Max 999 updates reached. Clean up old entries.", "error");
         return;
       }
 
@@ -454,8 +602,7 @@
 
       try {
         const formData = new FormData(e.target);
-        const updateData = {
-          id: Date.now().toString(),
+        const payload = {
           date: formData.get("date"),
           team_member: formData.get("team_member"),
           department: formData.get("department"),
@@ -463,21 +610,28 @@
           today_plan: formData.get("today_plan") || "",
           blockers: formData.get("blockers") || "",
           remarks: formData.get("remarks") || "",
-          status: "active",
-          created_at: new Date().toISOString(),
+          created_at: new Date().toISOString()
         };
 
-        const result = await window.dataSdk.create(updateData);
+        let result;
+        if (activeEditId) {
+          // EDIT
+          delete payload.created_at; // don't overwrite original created_at
+          result = await window.dataSdk.update(activeEditId, payload);
+        } else {
+          // CREATE
+          result = await window.dataSdk.create(payload);
+        }
 
         if (result.isOk) {
           closeModal();
-          showToast("✅ Update saved successfully!", "success");
+          showToast(activeEditId ? "Update saved." : "New entry added.", "success");
         } else {
-          showToast("❌ Failed to save update. Please try again.", "error");
+          showToast("Failed to save update. Check console / Supabase config.", "error");
         }
       } catch (err) {
         console.error(err);
-        showToast("❌ An error occurred while saving.", "error");
+        showToast("Unexpected error while saving.", "error");
       } finally {
         saveBtn.disabled = false;
         saveText.classList.remove("hidden");
@@ -485,7 +639,7 @@
       }
     }
 
-    // ---------- UI FUNCTIONS (dashboard / summary / manager) ----------
+    // ============ RENDERING ============
     function updateUI() {
       updateDashboard();
       updateManagerPanel();
@@ -497,9 +651,9 @@
       const emptyState = document.getElementById("empty-state");
       const today = new Date().toISOString().split("T")[0];
 
-      const todayUpdates = currentData.filter(update => update.date === today);
+      const todayUpdates = currentData.filter(u => u.date === today);
 
-      if (todayUpdates.length === 0) {
+      if (!todayUpdates.length) {
         container.innerHTML = "";
         emptyState.classList.remove("hidden");
         return;
@@ -507,92 +661,110 @@
 
       emptyState.classList.add("hidden");
 
-      const memberUpdates = {};
-      todayUpdates.forEach(update => {
-        if (
-          !memberUpdates[update.team_member] ||
-          new Date(update.created_at) > new Date(memberUpdates[update.team_member].created_at)
-        ) {
-          memberUpdates[update.team_member] = update;
+      // latest per member
+      const latestByMember = {};
+      todayUpdates.forEach(u => {
+        if (!latestByMember[u.team_member] ||
+            new Date(u.created_at) > new Date(latestByMember[u.team_member].created_at)) {
+          latestByMember[u.team_member] = u;
         }
       });
 
-      container.innerHTML = Object.values(memberUpdates)
-        .map(createUpdateCard)
+      container.innerHTML = Object.values(latestByMember)
+        .map(u => createUpdateCard(u))
         .join("");
+
+      // attach edit handlers
+      container.querySelectorAll("[data-edit-id]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.editId;
+          const row = currentData.find(r => r.id === id);
+          if (row) openModal(row);
+        });
+      });
     }
 
     function createUpdateCard(update) {
-      const member = teamMembers[update.team_member] || {
-        department: update.department,
-        color: "#6B7280",
-      };
-      const hasBlockers = update.blockers && update.blockers.trim().length > 0;
-      const initials = update.team_member.split(" ").map(n => n[0]).join("");
+      const memberInfo = teamMembers[update.team_member] ||
+        { department: update.department || "", color: "#64748b" };
+      const hasBlockers = !!(update.blockers && update.blockers.trim());
+      const initials = update.team_member
+        ? update.team_member.split(" ").map(n => n[0]).join("")
+        : "?";
 
       return `
-        <div class="scrum-card bg-white rounded-lg shadow-sm p-6 ${hasBlockers ? "blocker-urgent" : ""}">
-          <div class="flex items-center mb-4">
-            <div class="relative">
-              <div class="avatar" style="background-color:${member.color};">${esc(initials)}</div>
-              <div class="status-indicator bg-green-400"></div>
+        <article class="scrum-card p-4 flex flex-col gap-3">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="relative">
+                <div class="avatar"
+                     style="background: linear-gradient(135deg, ${memberInfo.color}, #111827);">
+                  ${esc(initials)}
+                </div>
+                <div class="status-indicator ${hasBlockers ? "bg-rose-500" : "bg-emerald-400"}"></div>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex items-center gap-1.5">
+                  <h3 class="text-xs font-semibold text-slate-50">
+                    ${esc(update.team_member || "Unassigned")}
+                  </h3>
+                  ${hasBlockers ? `
+                    <span class="px-1.5 py-0.5 rounded-full bg-rose-500/20 text-[0.55rem] text-rose-300">
+                      ⚠ Blocker
+                    </span>` : `
+                    <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-[0.55rem] text-emerald-300">
+                      ✓ Clear
+                    </span>`}
+                </div>
+                <span class="department-pill">
+                  <span class="w-1.5 h-1.5 rounded-full"
+                        style="background-color:${memberInfo.color};"></span>
+                  ${esc(update.department || memberInfo.department || "Dept")}
+                </span>
+              </div>
             </div>
-            <div class="ml-3 flex-1">
-              <h3 class="font-semibold text-gray-900">${esc(update.team_member)}</h3>
-              <span class="department-tag text-white" style="background-color:${member.color};">
-                ${esc(update.department)}
-              </span>
-            </div>
-            <div class="text-xs text-gray-500">
-              ${new Date(update.created_at).toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </div>
+            <button class="text-[0.6rem] px-2 py-1 rounded-full bg-slate-900/90 text-slate-400
+                           hover:text-blue-400 hover:bg-slate-800 transition-all"
+                    data-edit-id="${esc(update.id)}">
+              ✏ Edit
+            </button>
           </div>
 
-          <div class="space-y-4">
+          <div class="space-y-1.5 text-[0.68rem]">
             <div>
-              <h4 class="text-sm font-medium text-gray-700 mb-2">✅ Yesterday's Work</h4>
-              <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                ${esc(update.yesterday_work || "No updates provided")}
+              <p class="text-slate-500">Yesterday</p>
+              <p class="text-slate-100">
+                ${esc(update.yesterday_work || "No update provided.")}
               </p>
             </div>
-
             <div>
-              <h4 class="text-sm font-medium text-gray-700 mb-2">🎯 Today's Plan</h4>
-              <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-                ${esc(update.today_plan || "No plans specified")}
+              <p class="text-slate-500">Today</p>
+              <p class="text-slate-100">
+                ${esc(update.today_plan || "No plan specified.")}
               </p>
             </div>
-
-            ${
-              hasBlockers
-                ? `
+            <div>
+              <p class="text-slate-500">Blockers</p>
+              <p class="${hasBlockers ? "text-rose-300" : "text-slate-600"}">
+                ${esc(update.blockers || "None")}
+              </p>
+            </div>
+            ${update.remarks ? `
               <div>
-                <h4 class="text-sm font-medium text-red-700 mb-2">⚠️ Blockers</h4>
-                <p class="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
-                  ${esc(update.blockers)}
-                </p>
-              </div>
-            `
-                : ""
-            }
-
-            ${
-              update.remarks
-                ? `
-              <div>
-                <h4 class="text-sm font-medium text-gray-700 mb-2">💬 Remarks</h4>
-                <p class="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
-                  ${esc(update.remarks)}
-                </p>
-              </div>
-            `
-                : ""
-            }
+                <p class="text-slate-500">Notes</p>
+                <p class="text-indigo-200">${esc(update.remarks)}</p>
+              </div>` : ""}
           </div>
-        </div>
+
+          <div class="flex justify-between items-center text-[0.6rem] text-slate-500 pt-1">
+            <span>${new Date(update.date || update.created_at).toLocaleDateString()}</span>
+            <span>
+              ${update.created_at
+                ? new Date(update.created_at).toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"})
+                : ""}
+            </span>
+          </div>
+        </article>
       `;
     }
 
@@ -601,99 +773,81 @@
       const container = document.getElementById("summary-content");
       if (!selectedDate) return;
 
-      const dayUpdates = currentData.filter(update => update.date === selectedDate);
+      const dayUpdates = currentData.filter(u => u.date === selectedDate);
 
-      if (dayUpdates.length === 0) {
+      if (!dayUpdates.length) {
         container.innerHTML = `
-          <div class="text-center py-8">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <span class="text-2xl">📅</span>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No updates for this date</h3>
-            <p class="text-gray-500">Select a different date or add updates for ${esc(selectedDate)}</p>
-          </div>
-        `;
+          <div class="glass rounded-3xl p-6 flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-2xl">📅</div>
+            <p class="text-sm text-slate-200">No updates for ${esc(selectedDate)}.</p>
+            <p class="text-[0.7rem] text-slate-500">
+              Ask the team to submit standup entries, or pick another date.
+            </p>
+          </div>`;
         return;
       }
 
-      const memberGroups = {};
-      dayUpdates.forEach(update => {
-        if (!memberGroups[update.team_member]) {
-          memberGroups[update.team_member] = [];
-        }
-        memberGroups[update.team_member].push(update);
+      const groups = {};
+      dayUpdates.forEach(u => {
+        if (!groups[u.team_member]) groups[u.team_member] = [];
+        groups[u.team_member].push(u);
       });
 
       container.innerHTML = `
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            Standup Summary - ${
+        <div class="glass rounded-3xl p-5 space-y-4">
+          <h3 class="text-sm font-semibold text-slate-50">
+            Standup summary — ${
               new Date(selectedDate).toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
+                weekday:"long", month:"short", day:"numeric", year:"numeric"
               })
             }
           </h3>
-          ${Object.entries(memberGroups)
-            .map(([member, updates]) => {
-              const latestUpdate = updates.sort(
-                (a, b) => new Date(b.created_at) - new Date(a.created_at)
-              )[0];
-              const memberInfo =
-                teamMembers[member] || {
-                  department: latestUpdate.department,
-                  color: "#6B7280",
-                };
+          ${
+            Object.entries(groups).map(([member, list]) => {
+              const latest = list.sort((a,b) =>
+                new Date(b.created_at) - new Date(a.created_at))[0];
+              const info = teamMembers[member] || {color:"#64748b"};
 
               return `
-                <div class="border-l-4 pl-4 mb-6" style="border-color:${memberInfo.color};">
-                  <div class="flex items-center mb-3">
-                    <h4 class="font-medium text-gray-900">${esc(member)}</h4>
-                    <span class="ml-2 text-xs px-2 py-1 rounded-full text-white"
-                          style="background-color:${memberInfo.color};">
-                      ${esc(latestUpdate.department)}
+                <div class="border-l-2 pl-3 space-y-1.5"
+                     style="border-color:${info.color};">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[0.8rem] font-semibold text-slate-100">
+                      ${esc(member || "Unassigned")}
+                    </span>
+                    <span class="text-[0.6rem] px-2 py-0.5 rounded-full
+                                 bg-slate-900 text-slate-300 border border-slate-700">
+                      ${esc(latest.department || "Dept")}
                     </span>
                   </div>
-
-                  <div class="grid md:grid-cols-3 gap-4 text-sm">
+                  <div class="grid md:grid-cols-3 gap-2 text-[0.68rem]">
                     <div>
-                      <strong class="text-gray-700">Yesterday:</strong>
-                      <p class="text-gray-600 mt-1">
-                        ${esc(latestUpdate.yesterday_work || "No updates")}
-                      </p>
+                      <div class="text-slate-500">Yesterday</div>
+                      <div class="text-slate-100">
+                        ${esc(latest.yesterday_work || "No update")}
+                      </div>
                     </div>
                     <div>
-                      <strong class="text-gray-700">Today:</strong>
-                      <p class="text-gray-600 mt-1">
-                        ${esc(latestUpdate.today_plan || "No plans")}
-                      </p>
+                      <div class="text-slate-500">Today</div>
+                      <div class="text-slate-100">
+                        ${esc(latest.today_plan || "No plan")}
+                      </div>
                     </div>
                     <div>
-                      <strong class="text-gray-700">Blockers:</strong>
-                      <p class="text-gray-600 mt-1 ${
-                        latestUpdate.blockers ? "text-red-600" : ""
-                      }">
-                        ${esc(latestUpdate.blockers || "None")}
-                      </p>
+                      <div class="text-slate-500">Blockers</div>
+                      <div class="${latest.blockers ? "text-rose-300" : "text-slate-500"}">
+                        ${esc(latest.blockers || "None")}
+                      </div>
                     </div>
                   </div>
-
-                  ${
-                    latestUpdate.remarks
-                      ? `
-                    <div class="mt-2 text-sm">
-                      <strong class="text-gray-700">Remarks:</strong>
-                      <p class="text-gray-600 mt-1">${esc(latestUpdate.remarks)}</p>
-                    </div>
-                  `
-                      : ""
-                  }
+                  ${latest.remarks ? `
+                    <div class="text-[0.65rem] text-indigo-200">
+                      Notes: ${esc(latest.remarks)}
+                    </div>` : ""}
                 </div>
               `;
-            })
-            .join("")}
+            }).join("")
+          }
         </div>
       `;
     }
@@ -705,216 +859,216 @@
 
     function populateFilterDropdowns() {
       const memberSelect = document.getElementById("filter-member");
-      const currentMembers = [...new Set(currentData.map(update => update.team_member))];
+      const unique = [...new Set(currentData.map(u => u.team_member).filter(Boolean))];
 
       memberSelect.innerHTML =
-        '<option value="">All Team Members</option>' +
-        currentMembers.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
+        `<option value="">All team members</option>` +
+        unique.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
     }
 
     function applyFilters() {
-      const memberFilter = document.getElementById("filter-member").value;
-      const departmentFilter = document.getElementById("filter-department").value;
-      const dateFilter = document.getElementById("filter-date").value;
+      const member = document.getElementById("filter-member").value;
+      const dept = document.getElementById("filter-department").value;
+      const date = document.getElementById("filter-date").value;
 
-      let filteredData = currentData;
+      let items = [...currentData];
 
-      if (memberFilter) {
-        filteredData = filteredData.filter(u => u.team_member === memberFilter);
-      }
-      if (departmentFilter) {
-        filteredData = filteredData.filter(u => u.department === departmentFilter);
-      }
-      if (dateFilter) {
-        filteredData = filteredData.filter(u => u.date === dateFilter);
-      }
+      if (member) items = items.filter(u => u.team_member === member);
+      if (dept) items = items.filter(u => u.department === dept);
+      if (date) items = items.filter(u => u.date === date);
 
-      displayManagerContent(filteredData);
+      displayManagerContent(items);
     }
 
     function displayManagerContent(data) {
       const container = document.getElementById("manager-content");
       const blockerArea = document.getElementById("blocker-escalation-area");
 
-      if (data.length === 0) {
+      if (!data.length) {
         blockerArea.innerHTML = "";
         container.innerHTML = `
-          <div class="text-center py-8">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <span class="text-2xl">🔍</span>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No updates match your filters</h3>
-            <p class="text-gray-500">Try adjusting your filter criteria</p>
-          </div>
-        `;
+          <div class="glass rounded-3xl p-6 flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-2xl">🔍</div>
+            <p class="text-sm text-slate-200">No entries match the current filters.</p>
+            <p class="text-[0.7rem] text-slate-500">Adjust filters to see more.</p>
+          </div>`;
         return;
       }
 
-      const totalUpdates = data.length;
-      const uniqueMembers = new Set(data.map(u => u.team_member)).size;
       const openBlockers = data.filter(u => u.blockers && u.blockers.trim());
-
       if (openBlockers.length) {
         blockerArea.innerHTML = `
-          <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div class="text-red-700 font-semibold mb-2">🚨 Blockers to clear:</div>
-            <ul class="text-sm text-red-700 list-disc pl-5 space-y-1">
-              ${openBlockers
-                .map(
-                  b => `
-                <li>
-                  <span class="font-medium">${esc(b.team_member)}</span>
-                  (${esc(b.department)}):
-                  ${esc(b.blockers)}
-                </li>
-              `
-                )
-                .join("")}
+          <div class="rounded-2xl bg-rose-500/10 border border-rose-500/40 px-3 py-2 text-[0.65rem] text-rose-200">
+            <div class="font-semibold mb-1 flex items-center gap-1.5">
+              🚨 ${openBlockers.length} blocker${openBlockers.length>1?"s":""} need attention
+            </div>
+            <ul class="list-disc pl-4 space-y-0.5">
+              ${
+                openBlockers.slice(0,6).map(b => `
+                  <li>
+                    <span class="font-semibold">${esc(b.team_member)}</span>
+                    <span class="text-slate-400">(${esc(b.department || "")})</span> —
+                    ${esc(b.blockers)}
+                  </li>`).join("")
+              }
             </ul>
-          </div>
-        `;
+          </div>`;
       } else {
         blockerArea.innerHTML = "";
       }
 
+      const total = data.length;
+      const uniqueMembers = new Set(data.map(u => u.team_member)).size;
+
       container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div class="bg-white p-4 rounded-lg shadow-sm">
-            <div class="text-2xl font-bold text-blue-600">${totalUpdates}</div>
-            <div class="text-sm text-gray-600">Total Updates</div>
+        <div class="grid grid-cols-3 gap-2 mb-3 text-[0.65rem]">
+          <div class="glass rounded-2xl px-3 py-2">
+            <div class="text-slate-400">Total updates</div>
+            <div class="text-lg font-semibold text-slate-50">${total}</div>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow-sm">
-            <div class="text-2xl font-bold text-green-600">${uniqueMembers}</div>
-            <div class="text-sm text-gray-600">Active Members</div>
+          <div class="glass rounded-2xl px-3 py-2">
+            <div class="text-slate-400">Active members</div>
+            <div class="text-lg font-semibold text-emerald-400">${uniqueMembers}</div>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow-sm">
-            <div class="text-2xl font-bold text-red-600">${openBlockers.length}</div>
-            <div class="text-sm text-gray-600">Active Blockers</div>
+          <div class="glass rounded-2xl px-3 py-2">
+            <div class="text-slate-400">Open blockers</div>
+            <div class="text-lg font-semibold ${openBlockers.length ? "text-rose-400" : "text-slate-400"}">
+              ${openBlockers.length}
+            </div>
           </div>
         </div>
 
-        <div class="space-y-4">
-          ${data
-            .map(update => {
-              const memberInfo =
-                teamMembers[update.team_member] || {
-                  department: update.department,
-                  color: "#6B7280",
-                };
-              const hasBlockers = update.blockers && update.blockers.trim();
-
+        <div class="space-y-2">
+          ${
+            data.map(u => {
+              const info = teamMembers[u.team_member] || {color:"#64748b"};
+              const hasBlockers = u.blockers && u.blockers.trim();
+              const initials = u.team_member
+                ? u.team_member.split(" ").map(n => n[0]).join("")
+                : "?";
               return `
-                <div class="bg-white rounded-lg shadow-sm p-4 ${
-                  hasBlockers ? "border-l-4 border-red-400" : ""
-                }">
-                  <div class="flex justify-between items-start mb-3">
-                    <div class="flex items-center">
-                      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                           style="background-color:${memberInfo.color};">
-                        ${esc(update.team_member.split(" ").map(n => n[0]).join(""))}
+                <div class="glass rounded-2xl px-3 py-2 flex flex-col gap-1.5 text-[0.65rem]">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[0.6rem] text-white"
+                           style="background: linear-gradient(135deg, ${info.color}, #020817);">
+                        ${esc(initials)}
                       </div>
-                      <div class="ml-3">
-                        <h4 class="font-medium text-gray-900">${esc(update.team_member)}</h4>
-                        <p class="text-sm text-gray-500">
-                          ${esc(update.department)} • ${new Date(update.date).toLocaleDateString()}
-                        </p>
+                      <div>
+                        <div class="flex items-center gap-1.5">
+                          <span class="font-semibold text-slate-50">${esc(u.team_member || "Unassigned")}</span>
+                          <span class="px-1.5 py-0.5 rounded-full bg-slate-950 text-slate-400 border border-slate-700">
+                            ${esc(u.department || "")}
+                          </span>
+                        </div>
+                        <div class="text-slate-500">
+                          ${esc(u.date || "")}
+                          ${hasBlockers ? " • ⚠ Blocker" : ""}
+                        </div>
                       </div>
                     </div>
-                    ${
-                      hasBlockers
-                        ? '<span class="text-red-500 text-sm font-medium">⚠️ Has Blockers</span>'
-                        : ""
-                    }
+                    <button class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 hover:text-blue-400
+                                   hover:bg-slate-800 transition-all"
+                            data-edit-id="${esc(u.id)}">
+                      Edit
+                    </button>
                   </div>
-
-                  <div class="grid md:grid-cols-2 gap-4 text-sm">
+                  <div class="grid md:grid-cols-2 gap-1.5">
                     <div>
-                      <strong class="text-gray-700">Yesterday:</strong>
-                      <p class="text-gray-600 mt-1">
-                        ${esc(update.yesterday_work || "No updates")}
-                      </p>
+                      <span class="text-slate-500">Yesterday:</span>
+                      <span class="text-slate-100"> ${esc(u.yesterday_work || "—")} </span>
                     </div>
                     <div>
-                      <strong class="text-gray-700">Today:</strong>
-                      <p class="text-gray-600 mt-1">
-                        ${esc(update.today_plan || "No plans")}
-                      </p>
+                      <span class="text-slate-500">Today:</span>
+                      <span class="text-slate-100"> ${esc(u.today_plan || "—")} </span>
                     </div>
                   </div>
-
                   ${
-                    hasBlockers
-                      ? `
-                    <div class="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
-                      <strong class="text-red-700">Blockers:</strong>
-                      <p class="text-red-600 mt-1">${esc(update.blockers)}</p>
-                    </div>
-                  `
-                      : ""
+                    hasBlockers ? `
+                      <div class="text-rose-300">
+                        <span class="text-rose-400">Blocker:</span> ${esc(u.blockers)}
+                      </div>` : ""
+                  }
+                  ${
+                    u.remarks ? `
+                      <div class="text-indigo-200">
+                        <span class="text-indigo-400">Notes:</span> ${esc(u.remarks)}
+                      </div>` : ""
                   }
                 </div>
               `;
-            })
-            .join("")}
+            }).join("")
+          }
         </div>
       `;
+
+      // wire edit buttons here too
+      container.querySelectorAll("[data-edit-id]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.editId;
+          const row = currentData.find(r => r.id === id);
+          if (row) openModal(row);
+        });
+      });
     }
 
-    // ---------- MISC HELPERS ----------
+    // ============ EXPORT CSV ============
     function exportSummary() {
       const selectedDate = document.getElementById("summary-date").value;
       if (!selectedDate) {
-        showToast("⚠️ Please select a date to export", "error");
+        showToast("Pick a date first.", "error");
         return;
       }
 
-      const dayUpdates = currentData.filter(update => update.date === selectedDate);
-      if (dayUpdates.length === 0) {
-        showToast("⚠️ No updates found for the selected date", "error");
+      const rows = currentData.filter(u => u.date === selectedDate);
+      if (!rows.length) {
+        showToast("No data for that date.", "error");
         return;
       }
 
       const headers = [
-        "Team Member",
-        "Department",
-        "Yesterday Work",
-        "Today Plan",
-        "Blockers",
-        "Remarks",
+        "date",
+        "team_member",
+        "department",
+        "yesterday_work",
+        "today_plan",
+        "blockers",
+        "remarks"
       ];
 
-      const csvContent = [
+      const lines = [
         headers.join(","),
-        ...dayUpdates.map(update =>
-          [
-            `"${update.team_member}"`,
-            `"${update.department}"`,
-            `"${(update.yesterday_work || "").replace(/"/g, '""')}"`,
-            `"${(update.today_plan || "").replace(/"/g, '""')}"`,
-            `"${(update.blockers || "").replace(/"/g, '""')}"`,
-            `"${(update.remarks || "").replace(/"/g, '""')}"`,
-          ].join(",")
-        ),
-      ].join("\n");
+        ...rows.map(r => [
+          r.date,
+          r.team_member,
+          r.department,
+          (r.yesterday_work || "").replace(/"/g, '""'),
+          (r.today_plan || "").replace(/"/g, '""'),
+          (r.blockers || "").replace(/"/g, '""'),
+          (r.remarks || "").replace(/"/g, '""'),
+        ].map(v => `"${v || ""}"`).join(","))
+      ];
 
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
+      const blob = new Blob([lines.join("\n")], {type:"text/csv"});
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `scrum-summary-${selectedDate}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);
 
-      showToast("📄 Summary exported successfully!", "success");
+      showToast("Summary exported.", "success");
     }
 
+    // ============ UTILITIES ============
     function updateCurrentDate() {
       const now = new Date();
-      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
       document.getElementById("current-date").textContent =
-        now.toLocaleDateString("en-US", options);
+        now.toLocaleDateString("en-US", {
+          weekday:"long", month:"short", day:"numeric", year:"numeric"
+        });
     }
 
     function toggleTimer() {
@@ -922,9 +1076,9 @@
       const timerDisplay = document.getElementById("timer-display");
 
       if (!isTimerRunning) {
-        timerSeconds = parseInt(defaultConfig.meeting_duration, 10) * 60;
+        timerSeconds = defaultConfig.meeting_duration * 60;
         isTimerRunning = true;
-        btn.textContent = "⏹️ Stop Scrum";
+        btn.textContent = "⏹ Stop Scrum";
         btn.classList.add("timer-active");
         timerDisplay.classList.remove("hidden");
 
@@ -936,7 +1090,8 @@
             isTimerRunning = false;
             btn.textContent = "🚀 Start Scrum";
             btn.classList.remove("timer-active");
-            showToast("⏰ Scrum meeting time completed!", "success");
+            timerDisplay.classList.add("hidden");
+            showToast("Standup timer finished.", "success");
           }
         }, 1000);
       } else {
@@ -951,72 +1106,96 @@
     function updateTimerDisplay() {
       const minutes = Math.floor(timerSeconds / 60);
       const seconds = timerSeconds % 60;
-      const display =
-        `${minutes.toString().padStart(2, "0")}:${seconds
-          .toString()
-          .padStart(2, "0")}`;
-      document.getElementById("timer-text").textContent = display;
+      const s = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+      const el = document.getElementById("timer-text");
+      if (el) el.textContent = s;
     }
 
     function switchTab(tabName) {
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.classList.remove("active");
-        btn.style.borderColor = "transparent";
-        btn.style.color = "#6B7280";
+        btn.classList.remove("pill-active");
+        btn.classList.remove("bg-blue-500");
       });
 
-      const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
-      activeBtn.classList.add("active");
-      activeBtn.style.borderColor = "#FFD400";
-      activeBtn.style.color = "#1A2238";
+      const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+      if (activeBtn) activeBtn.classList.add("active");
 
-      document.querySelectorAll(".tab-content").forEach(content => {
-        content.classList.add("hidden");
-      });
-      document.getElementById(`${tabName}-tab`).classList.remove("hidden");
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
+      const target = document.getElementById(`${tabName}-tab`);
+      if (target) target.classList.remove("hidden");
 
-      if (tabName === "summary") {
-        updateSummaryView();
-      } else if (tabName === "manager") {
-        updateManagerPanel();
-      }
+      if (tabName === "summary") updateSummaryView();
+      if (tabName === "manager") updateManagerPanel();
     }
 
-    function showToast(message, type = "info") {
+    function showToast(message, type="info") {
       const toast = document.createElement("div");
       toast.className =
-        "fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform translate-x-full";
+        "fixed top-4 right-4 z-50 px-3 py-2 rounded-2xl text-[0.7rem] font-medium" +
+        " shadow-lg shadow-slate-900/80 transform translate-x-full opacity-0 transition-all";
 
       const colors = {
-        success: "bg-green-500",
-        error: "bg-red-500",
-        info: "bg-blue-500",
+        success: "bg-emerald-500 text-slate-950",
+        error: "bg-rose-500 text-slate-950",
+        info: "bg-blue-500 text-slate-950"
       };
-
       toast.classList.add(colors[type] || colors.info);
       toast.textContent = message;
       document.body.appendChild(toast);
 
-      setTimeout(() => {
-        toast.classList.remove("translate-x-full");
-      }, 100);
+      requestAnimationFrame(() => {
+        toast.classList.remove("translate-x-full", "opacity-0");
+      });
 
       setTimeout(() => {
-        toast.classList.add("translate-x-full");
-        setTimeout(() => {
-          document.body.removeChild(toast);
-        }, 300);
-      }, 3000);
+        toast.classList.add("translate-x-full", "opacity-0");
+        setTimeout(() => toast.remove(), 220);
+      }, 2600);
     }
 
-    function openModal() {
-      document.getElementById("update-modal").classList.remove("hidden");
+    function openModal(existing) {
+      const modal = document.getElementById("update-modal");
+      const title = document.getElementById("modal-title");
+      const editHint = document.getElementById("edit-hint");
+      const saveText = document.getElementById("save-text");
+
+      if (existing) {
+        activeEditId = existing.id;
+        title.textContent = "Edit standup update";
+        editHint.classList.remove("hidden");
+        saveText.textContent = "Save changes";
+
+        document.getElementById("update-date").value = existing.date || "";
+        document.getElementById("team-member").value = existing.team_member || "";
+        document.getElementById("department").value = existing.department || "";
+        document.getElementById("yesterday-work").value = existing.yesterday_work || "";
+        document.getElementById("today-plan").value = existing.today_plan || "";
+        document.getElementById("blockers").value = existing.blockers || "";
+        document.getElementById("remarks").value = existing.remarks || "";
+      } else {
+        activeEditId = null;
+        title.textContent = "New standup update";
+        editHint.classList.add("hidden");
+        saveText.textContent = "Save update";
+
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("update-date").value = today;
+        document.getElementById("team-member").value = "";
+        document.getElementById("department").value = "";
+        document.getElementById("yesterday-work").value = "";
+        document.getElementById("today-plan").value = "";
+        document.getElementById("blockers").value = "";
+        document.getElementById("remarks").value = "";
+      }
+
+      modal.classList.remove("hidden");
     }
+
     function closeModal() {
+      activeEditId = null;
       document.getElementById("update-modal").classList.add("hidden");
     }
-
-    document.addEventListener("DOMContentLoaded", initializeApp);
   </script>
 </body>
 </html>
