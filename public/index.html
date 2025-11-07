@@ -8,55 +8,40 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      /* ClickUp-inspired light palette */
+      /* ClickUp-style light palette */
       --brand-bg: #f5f5fb;
       --brand-surface: #ffffff;
-      --brand-surface-soft: #f9fafb;
       --brand-border-subtle: #e5e7eb;
       --brand-text-main: #111827;
-      --brand-text-soft: #6b7280;
-      --brand-accent: #7c3aed;      /* purple */
-      --brand-accent-2: #22c55e;    /* green */
-      --brand-accent-3: #06b6d4;    /* teal */
-      --brand-accent-soft: rgba(124,58,237,0.06);
+      --brand-muted: #6b7280;
+      --brand-accent: #7c3aed;       /* purple */
+      --brand-accent-2: #22c55e;     /* green */
+      --brand-accent-3: #06b6d4;     /* teal */
+      --brand-accent-soft: rgba(124, 58, 237, 0.06);
       --radius-xl: 22px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(circle at top, #eef2ff 0, #f5f5fb 32%, #f9fafb 100%);
+      background: var(--brand-bg);
       color: var(--brand-text-main);
     }
 
-    .app-shell {
-      min-height: 100vh;
-      color: var(--brand-text-main);
-    }
-
-    /* HEADER */
-    header.app-header {
-      background: linear-gradient(to right, #ffffff, #faf5ff);
+    header {
+      background: linear-gradient(to right, #ffffff, #f5f3ff);
       border-bottom: 1px solid var(--brand-border-subtle);
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      backdrop-filter: blur(10px);
     }
 
-    /* Generic card */
     .glass {
       background: var(--brand-surface);
-      border-radius: var(--radius-xl);
+      backdrop-filter: blur(0);
       border: 1px solid var(--brand-border-subtle);
-      box-shadow: 0 8px 24px rgba(15,23,42,0.03);
+      border-radius: var(--radius-xl);
     }
 
-    /* Main scrum card */
     .scrum-card {
       transition: all 0.18s ease;
       border-radius: 18px;
@@ -64,26 +49,26 @@
       background:
         radial-gradient(circle at top left, var(--brand-accent-soft), transparent),
         var(--brand-surface);
-      box-shadow: 0 4px 14px rgba(15,23,42,0.04);
+      font-size: 0.9rem;
     }
 
     .scrum-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 16px 40px rgba(15,23,42,0.12);
-      border-color: rgba(124,58,237,0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 35px rgba(15,23,42,0.08);
+      border-color: rgba(124,58,237,0.45);
     }
 
     .department-pill {
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       padding: 4px 10px;
       border-radius: 999px;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: var(--brand-surface-soft);
-      border: 1px solid var(--brand-border-subtle);
-      color: var(--brand-text-soft);
+      gap: 4px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      color: var(--brand-muted);
     }
 
     .avatar {
@@ -110,13 +95,12 @@
     }
 
     .modal-overlay {
-      background: rgba(15,23,42,0.12);
+      background: rgba(15,23,42,0.18);
       backdrop-filter: blur(6px);
     }
 
-    /* Tabs / Pills */
     .pill {
-      padding: 7px 16px;
+      padding: 8px 16px;
       border-radius: 999px;
       border: 1px solid transparent;
       font-size: 0.8rem;
@@ -124,10 +108,9 @@
       align-items: center;
       gap: 6px;
       cursor: pointer;
-      color: var(--brand-text-soft);
+      color: var(--brand-muted);
       transition: all 0.16s ease;
-      background: transparent;
-      white-space: nowrap;
+      background: #f9fafb;
     }
 
     .pill span.dot {
@@ -139,80 +122,66 @@
 
     .pill.active {
       color: var(--brand-accent);
-      border-color: rgba(124,58,237,0.45);
-      box-shadow: 0 0 18px rgba(124,58,237,0.14);
+      border-color: rgba(124,58,237,0.6);
+      box-shadow: 0 0 18px rgba(124,58,237,0.16);
       background: #ffffff;
     }
 
     .timer-active {
-      box-shadow: 0 0 16px rgba(34,197,94,0.35);
+      box-shadow: 0 0 14px rgba(34,197,94,0.45);
     }
 
-    /* Readability helpers */
     .text-label {
+      font-size: 0.78rem;
+      color: var(--brand-muted);
+    }
+
+    .text-small {
       font-size: 0.8rem;
-      color: var(--brand-text-soft);
-      font-weight: 500;
-    }
-
-    .text-body {
-      font-size: 0.88rem;
-      color: var(--brand-text-main);
-    }
-
-    .metric-label {
-      font-size: 0.8rem;
-      color: var(--brand-text-soft);
-    }
-
-    .metric-value {
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--brand-text-main);
     }
   </style>
 </head>
-<body>
-  <div id="app" class="app-shell">
-    <!-- HEADER -->
-    <header class="app-header">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-6">
+<body class="min-h-screen">
+  <div id="app" class="min-h-screen">
+    <!-- TOP BAR -->
+    <header class="w-full">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-fuchsia-500 via-purple-500 to-indigo-500
-                      flex items-center justify-center font-extrabold text-white text-lg shadow-md">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-rose-500
+                      flex items-center justify-center font-extrabold text-white text-xl shadow-md">
             S
           </div>
           <div>
             <div class="flex items-center gap-2 flex-wrap">
-              <h1 id="portal-title" class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
+              <h1 id="portal-title" class="text-xl md:text-2xl font-semibold tracking-tight text-slate-900">
                 Retail Team Scrum Portal
               </h1>
-              <span class="text-[0.75rem] px-2 py-0.5 rounded-full bg-violet-50 border border-violet-200 text-violet-700">
-                Live · Supabase
+              <span class="text-[0.7rem] px-2 py-0.5 rounded-full bg-violet-50 border border-violet-200 text-violet-600">
+                Live board
               </span>
             </div>
-            <p id="current-date" class="text-sm text-slate-500"></p>
+            <p id="current-date" class="text-xs text-slate-500"></p>
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 flex-wrap">
           <div id="timer-display"
-               class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs shadow-sm">
-            <span class="text-slate-500">Standup timer</span>
+               class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs text-slate-600">
+            <span>Standup timer</span>
             <span id="timer-text" class="font-semibold text-emerald-500">15:00</span>
           </div>
 
           <button id="start-scrum-btn"
-                  class="px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500
-                         text-xs sm:text-sm font-semibold text-white shadow-md
-                         hover:shadow-violet-300/40 transition-all flex items-center gap-1.5">
+                  class="px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500
+                         text-xs md:text-sm font-semibold text-white shadow-md hover:shadow-violet-300/60
+                         transition-all flex items-center gap-1.5">
             🚀 Start Scrum
           </button>
 
           <button id="add-update-btn"
-                  class="px-4 py-2 rounded-full bg-white border border-slate-200 text-xs sm:text-sm
-                         font-medium text-slate-800 hover:border-violet-400 hover:text-violet-600
-                         hover:shadow-sm flex items-center gap-1.5 transition-all">
+                  class="px-4 py-2 rounded-full bg-white border border-slate-200 text-xs md:text-sm
+                         font-medium text-slate-700 hover:border-violet-400 hover:text-violet-600
+                         flex items-center gap-1.5 transition-all">
             ➕ <span>Add update</span>
           </button>
         </div>
@@ -220,24 +189,24 @@
 
       <!-- TABS -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar">
+        <div class="flex items-center gap-3 flex-wrap">
           <button class="tab-btn pill active" data-tab="dashboard">
             <span class="dot"></span> Board
           </button>
           <button class="tab-btn pill" data-tab="summary">
-            <span class="dot" style="background-color:#22c55e;"></span> Summary
+            <span class="dot"></span> Summary
           </button>
           <button class="tab-btn pill" data-tab="manager">
-            <span class="dot" style="background-color:#06b6d4;"></span> Manager view
+            <span class="dot"></span> Manager view
           </button>
         </div>
 
-        <div class="hidden md:flex items-center gap-2 text-[0.75rem] text-slate-500">
+        <div class="hidden md:flex items-center gap-2 text-[0.7rem] text-slate-500">
           <span class="px-2 py-1 rounded-full bg-white border border-slate-200">
             ⏱️ 15-min async + live standup
           </span>
           <span class="px-2 py-1 rounded-full bg-white border border-slate-200">
-            ✅ ClickUp-style clean layout
+            🗄️ Supabase storage
           </span>
         </div>
       </div>
@@ -249,25 +218,25 @@
       <section id="dashboard-tab" class="tab-content">
         <div class="flex items-center justify-between gap-3 mb-4">
           <div>
-            <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Today's standup</h2>
-            <p class="text-sm text-slate-500">
-              See the latest update from each team member at a glance.
+            <h2 class="text-lg md:text-xl font-semibold text-slate-900">Today's standup</h2>
+            <p class="text-small text-slate-500">
+              Latest update per person for today. Click “Edit” to adjust entries.
             </p>
           </div>
         </div>
 
-        <div id="team-updates" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3"></div>
+        <div id="team-updates" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
 
         <div id="empty-state"
              class="mt-8 flex flex-col items-center justify-center gap-3 py-10
-                    glass border-dashed border-slate-300 text-center">
-          <div class="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-600">
+                    glass border-dashed">
+          <div class="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-500">
             📝
           </div>
           <h3 class="text-base font-medium text-slate-900">No updates yet for today</h3>
-          <p class="text-sm text-slate-500">Kick off the day by logging the first standup entry.</p>
-          <button class="add-update-trigger px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500
-                         text-sm font-semibold text-white shadow hover:shadow-violet-300/40 transition-all">
+          <p class="text-small text-slate-500">Kick things off by adding the first standup entry.</p>
+          <button class="add-update-trigger px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500
+                         text-xs md:text-sm font-semibold text-white shadow hover:shadow-violet-300/60 transition-all">
             Add first update
           </button>
         </div>
@@ -275,47 +244,32 @@
 
       <!-- SUMMARY TAB -->
       <section id="summary-tab" class="tab-content hidden">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
           <div>
-            <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Summary & Export</h2>
-            <p class="text-sm text-slate-500">
-              View a single-day snapshot or export multi-day reports for leadership.
+            <h2 class="text-lg md:text-xl font-semibold text-slate-900">Daily summary</h2>
+            <p class="text-small text-slate-500">
+              Pick a date or range to see who did what. Great for leadership recap.
             </p>
           </div>
-          <div class="flex flex-col gap-2 items-start md:items-end">
-            <!-- Single day controls -->
-            <div class="flex items-center gap-2 flex-wrap">
-              <input type="date"
-                     id="summary-date"
-                     class="px-3 py-2 text-sm rounded-full bg-white border border-slate-300
-                            text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400" />
+
+          <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+            <div class="flex items-center gap-2">
+              <div class="flex flex-col">
+                <span class="text-label">Date</span>
+                <input type="date"
+                       id="summary-date"
+                       class="px-3 py-1.5 text-xs rounded-full bg-white border border-slate-200
+                              text-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-500" />
+              </div>
               <button id="export-btn"
-                      class="px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400
-                             text-xs sm:text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm">
+                      class="mt-4 sm:mt-5 px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400
+                             text-[0.75rem] font-semibold text-white flex items-center gap-1.5">
                 📄 Export day CSV
-              </button>
-            </div>
-            <!-- Range controls -->
-            <div class="flex items-center gap-2 flex-wrap text-[0.75rem] text-slate-500">
-              <span class="hidden sm:inline">Date range export:</span>
-              <span class="sm:hidden">Range:</span>
-              <input type="date"
-                     id="export-from"
-                     class="px-3 py-1.5 text-sm rounded-full bg-white border border-slate-300
-                            text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <span class="text-slate-400">to</span>
-              <input type="date"
-                     id="export-to"
-                     class="px-3 py-1.5 text-sm rounded-full bg-white border border-slate-300
-                            text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <button id="export-range-btn"
-                      class="px-4 py-1.5 rounded-full bg-violet-500 hover:bg-violet-400
-                             text-[0.7rem] font-semibold text-white flex items-center gap-1.5 shadow-sm">
-                📄 Export range CSV
               </button>
             </div>
           </div>
         </div>
+
         <div id="summary-content" class="space-y-4"></div>
       </section>
 
@@ -323,40 +277,49 @@
       <section id="manager-tab" class="tab-content hidden">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
           <div>
-            <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Manager view</h2>
-            <p class="text-sm text-slate-500">
-              Filter by member, department, or date to spot risks and coverage.
+            <h2 class="text-lg md:text-xl font-semibold text-slate-900">Manager view</h2>
+            <p class="text-small text-slate-500">
+              Filter by member, department or date. Quickly see coverage and blockers.
             </p>
           </div>
         </div>
 
         <div class="glass p-4 mb-4">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-            <select id="filter-member"
-                    class="w-full px-3 py-2 text-sm rounded-full bg-white border border-slate-300
-                           text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400">
-              <option value="">All team members</option>
-            </select>
+            <div>
+              <span class="text-label">Team member</span>
+              <select id="filter-member"
+                      class="w-full mt-1 px-3 py-1.8 text-xs rounded-full bg-white border border-slate-200
+                             text-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-500">
+                <option value="">All team members</option>
+              </select>
+            </div>
 
-            <select id="filter-department"
-                    class="w-full px-3 py-2 text-sm rounded-full bg-white border border-slate-300
-                           text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400">
-              <option value="">All departments</option>
-              <option value="Management">Management</option>
-              <option value="Retail / MM">Retail / MM</option>
-              <option value="E-commerce">E-commerce</option>
-              <option value="Logistics">Logistics</option>
-              <option value="Fulfillment">Fulfillment</option>
-              <option value="Customer Exp">Customer Exp</option>
-            </select>
+            <div>
+              <span class="text-label">Department</span>
+              <select id="filter-department"
+                      class="w-full mt-1 px-3 py-1.8 text-xs rounded-full bg-white border border-slate-200
+                             text-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-500">
+                <option value="">All departments</option>
+                <option value="Management">Management</option>
+                <option value="Retail / MM">Retail / MM</option>
+                <option value="E-commerce">E-commerce</option>
+                <option value="Logistics">Logistics</option>
+                <option value="Fulfillment">Fulfillment</option>
+                <option value="Customer Exp">Customer Exp</option>
+              </select>
+            </div>
 
-            <input type="date"
-                   id="filter-date"
-                   class="w-full px-3 py-2 text-sm rounded-full bg-white border border-slate-300
-                          text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400" />
+            <div>
+              <span class="text-label">Date</span>
+              <input type="date"
+                     id="filter-date"
+                     class="w-full mt-1 px-3 py-1.8 text-xs rounded-full bg-white border border-slate-200
+                            text-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-500" />
+            </div>
           </div>
 
-          <div id="blocker-escalation-area" class="text-sm"></div>
+          <div id="blocker-escalation-area" class="text-xs"></div>
         </div>
 
         <div id="manager-content" class="space-y-3"></div>
@@ -372,30 +335,30 @@
             <h3 id="modal-title" class="text-base font-semibold text-slate-900">
               New standup update
             </h3>
-            <p class="text-xs text-slate-500">
+            <p class="text-small text-slate-500">
               Capture yesterday, today, and blockers in one quick form.
             </p>
           </div>
           <button id="close-modal"
                   class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center
-                         text-slate-500 hover:text-red-500 hover:bg-red-50 text-sm">
+                         text-slate-500 hover:text-rose-500 hover:bg-rose-50 text-sm">
             ✕
           </button>
         </div>
 
-        <form id="update-form" class="space-y-3 text-sm">
+        <form id="update-form" class="space-y-3 text-small">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="text-label mb-1 block">Date</label>
+              <label class="block mb-1 text-label">Date</label>
               <input type="date" id="update-date" name="date" required
-                     class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
-                            text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400" />
+                     class="w-full px-3 py-1.8 rounded-xl bg-white border border-slate-200
+                            text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-500" />
             </div>
             <div>
-              <label class="text-label mb-1 block">Team member</label>
+              <label class="block mb-1 text-label">Team member</label>
               <select id="team-member" name="team_member" required
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
-                             text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400">
+                      class="w-full px-3 py-1.8 rounded-xl bg-white border border-slate-200
+                             text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-500">
                 <option value="">Select</option>
                 <option value="Amrit">Amrit</option>
                 <option value="Vihan">Vihan</option>
@@ -408,10 +371,10 @@
           </div>
 
           <div>
-            <label class="text-label mb-1 block">Department</label>
+            <label class="block mb-1 text-label">Department</label>
             <select id="department" name="department" required
-                    class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
-                           text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400">
+                    class="w-full px-3 py-1.8 rounded-xl bg-white border border-slate-200
+                           text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-500">
               <option value="">Select department</option>
               <option value="Management">Management</option>
               <option value="Retail / MM">Retail / MM</option>
@@ -423,52 +386,52 @@
           </div>
 
           <div>
-            <label class="text-label mb-1 block">Yesterday's work</label>
+            <label class="block mb-1 text-label">Yesterday's work</label>
             <textarea id="yesterday-work" name="yesterday_work" rows="2"
                       placeholder="What did you complete?"
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
-                             text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"></textarea>
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
+                             text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
           </div>
 
           <div>
-            <label class="text-label mb-1 block">Today's plan</label>
+            <label class="block mb-1 text-label">Today's plan</label>
             <textarea id="today-plan" name="today_plan" rows="2"
                       placeholder="What will you work on?"
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
-                             text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"></textarea>
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
+                             text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
           </div>
 
           <div>
-            <label class="text-label mb-1 block">Blockers</label>
+            <label class="block mb-1 text-label">Blockers</label>
             <textarea id="blockers" name="blockers" rows="2"
                       placeholder="Any risks, delays, dependencies?"
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-rose-200
-                             text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-rose-300"></textarea>
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-rose-100
+                             text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-rose-400"></textarea>
           </div>
 
           <div>
-            <label class="text-label mb-1 block">Remarks / notes</label>
+            <label class="block mb-1 text-label">Remarks / notes</label>
             <textarea id="remarks" name="remarks" rows="2"
                       placeholder="Optional context for leads"
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
-                             text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"></textarea>
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
+                             text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
           </div>
 
           <div class="flex justify-between items-center pt-2 gap-3">
             <button type="button" id="cancel-btn"
-                    class="px-3 py-2 rounded-full bg-slate-100 text-slate-600 text-xs
+                    class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-[0.8rem]
                            hover:bg-slate-200 hover:text-slate-800">
               Cancel
             </button>
             <div class="flex items-center gap-2">
               <span id="edit-hint"
-                    class="hidden text-[0.7rem] px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                    class="hidden text-[0.75rem] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                 Editing existing entry
               </span>
               <button type="submit" id="save-btn"
-                      class="px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500
-                             text-xs sm:text-sm font-semibold text-white flex items-center gap-1.5
-                             hover:shadow-lg hover:shadow-violet-300/40 transition-all">
+                      class="px-4 py-1.8 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500
+                             text-[0.8rem] font-semibold text-white flex items-center gap-1.5
+                             hover:shadow-lg hover:shadow-violet-300/60 transition-all">
                 <span id="save-text">Save update</span>
                 <span id="save-loading" class="hidden">Saving…</span>
               </button>
@@ -481,8 +444,10 @@
 
   <!-- SCRIPT -->
   <script>
+    // ================== CONFIG ==================
     const defaultConfig = { meeting_duration: 15 };
 
+    // Supabase config (already created)
     const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
 
@@ -494,12 +459,12 @@
     };
 
     const teamMembers = {
-      "Amrit":   { department: "Management",   color: "#7c3aed" },
+      "Amrit":   { department: "Management",   color: "#38bdf8" },
       "Vihan":   { department: "Retail / MM",  color: "#22c55e" },
-      "Maricel": { department: "E-commerce",   color: "#06b6d4" },
+      "Maricel": { department: "E-commerce",   color: "#fb923c" },
       "Kunal":   { department: "Logistics",    color: "#6366f1" },
-      "Mehboob": { department: "Fulfillment",  color: "#f97316" },
-      "Aaron":   { department: "Customer Exp", color: "#ec4899" }
+      "Mehboob": { department: "Fulfillment",  color: "#a855f7" },
+      "Aaron":   { department: "Customer Exp", color: "#f97316" }
     };
 
     let currentData = [];
@@ -508,6 +473,7 @@
     let isTimerRunning = false;
     let activeEditId = null;
 
+    // ================== HELPERS ==================
     function esc(str) {
       return (str || "")
         .toString()
@@ -517,7 +483,28 @@
         .replace(/"/g, "&quot;");
     }
 
-    // Supabase data SDK
+    function toLocalYMD(dateLike) {
+      const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
+      if (isNaN(d)) return null;
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function recordMatchesDay(record, ymd) {
+      if (!ymd) return false;
+      if (record.date) {
+        // handle both exact "YYYY-MM-DD" and "YYYY-MM-DDTHH:MM"
+        return record.date.startsWith(ymd);
+      }
+      if (record.created_at) {
+        return toLocalYMD(record.created_at) === ymd;
+      }
+      return false;
+    }
+
+    // ============ Supabase data SDK ============
     window.dataSdk = {
       _handler: null,
 
@@ -568,10 +555,12 @@
               body: JSON.stringify(row)
             }
           );
+
           if (!resp.ok) {
             console.error("Supabase INSERT failed:", await resp.text());
             return { isOk: false };
           }
+
           await this.init(this._handler);
           return { isOk: true };
         } catch (err) {
@@ -590,10 +579,12 @@
               body: JSON.stringify(partial)
             }
           );
+
           if (!resp.ok) {
             console.error("Supabase UPDATE failed:", await resp.text());
             return { isOk: false };
           }
+
           await this.init(this._handler);
           return { isOk: true };
         } catch (err) {
@@ -610,6 +601,7 @@
       }
     };
 
+    // ============ INIT ============
     document.addEventListener("DOMContentLoaded", initializeApp);
 
     async function initializeApp() {
@@ -617,20 +609,13 @@
       updateTimerDisplay();
       setupStaticListeners();
 
-      const today = new Date().toISOString().split("T")[0];
-      const sevenDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
-        .toISOString().split("T")[0];
-
-      document.getElementById("update-date").value = today;
-      document.getElementById("summary-date").value = today;
-      document.getElementById("filter-date").value = today;
-
-      const fromInput = document.getElementById("export-from");
-      const toInput = document.getElementById("export-to");
-      if (fromInput && toInput) {
-        fromInput.value = sevenDaysAgo;
-        toInput.value = today;
-      }
+      const todayYMD = toLocalYMD(new Date());
+      const summaryDate = document.getElementById("summary-date");
+      const filterDate = document.getElementById("filter-date");
+      const updateDate = document.getElementById("update-date");
+      if (summaryDate) summaryDate.value = todayYMD;
+      if (filterDate) filterDate.value = todayYMD;
+      if (updateDate) updateDate.value = todayYMD;
 
       const initResult = await window.dataSdk.init(dataHandler);
       if (!initResult.isOk) {
@@ -638,6 +623,7 @@
       }
     }
 
+    // ============ LISTENERS ============
     function setupStaticListeners() {
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", () => switchTab(btn.dataset.tab));
@@ -652,6 +638,7 @@
       document.getElementById("cancel-btn").addEventListener("click", closeModal);
 
       document.getElementById("update-form").addEventListener("submit", handleFormSubmit);
+
       document.getElementById("start-scrum-btn").addEventListener("click", toggleTimer);
 
       document.getElementById("filter-member").addEventListener("change", applyFilters);
@@ -659,14 +646,10 @@
       document.getElementById("filter-date").addEventListener("change", applyFilters);
 
       document.getElementById("summary-date").addEventListener("change", updateSummaryView);
-      document.getElementById("export-btn").addEventListener("click", exportSummaryDay);
-
-      const exportRangeBtn = document.getElementById("export-range-btn");
-      if (exportRangeBtn) {
-        exportRangeBtn.addEventListener("click", exportSummaryRange);
-      }
+      document.getElementById("export-btn").addEventListener("click", exportSummary);
     }
 
+    // ============ FORM SUBMIT (CREATE / EDIT) ============
     async function handleFormSubmit(e) {
       e.preventDefault();
 
@@ -698,7 +681,7 @@
 
         let result;
         if (activeEditId) {
-          delete payload.created_at;
+          delete payload.created_at; // don't override original timestamp
           result = await window.dataSdk.update(activeEditId, payload);
         } else {
           result = await window.dataSdk.create(payload);
@@ -708,7 +691,7 @@
           closeModal();
           showToast(activeEditId ? "Update saved." : "New entry added.", "success");
         } else {
-          showToast("Failed to save update. Check console / Supabase config.", "error");
+          showToast("Failed to save update. Check Supabase config / console.", "error");
         }
       } catch (err) {
         console.error(err);
@@ -720,6 +703,7 @@
       }
     }
 
+    // ============ RENDERING ============
     function updateUI() {
       updateDashboard();
       updateManagerPanel();
@@ -729,9 +713,9 @@
     function updateDashboard() {
       const container = document.getElementById("team-updates");
       const emptyState = document.getElementById("empty-state");
-      const today = new Date().toISOString().split("T")[0];
+      const todayYMD = toLocalYMD(new Date());
 
-      const todayUpdates = currentData.filter(u => u.date === today);
+      const todayUpdates = currentData.filter(u => recordMatchesDay(u, todayYMD));
 
       if (!todayUpdates.length) {
         container.innerHTML = "";
@@ -743,14 +727,16 @@
 
       const latestByMember = {};
       todayUpdates.forEach(u => {
-        if (!latestByMember[u.team_member] ||
-            new Date(u.created_at) > new Date(latestByMember[u.team_member].created_at)) {
+        if (
+          !latestByMember[u.team_member] ||
+          new Date(u.created_at || u.date) > new Date(latestByMember[u.team_member].created_at || latestByMember[u.team_member].date)
+        ) {
           latestByMember[u.team_member] = u;
         }
       });
 
       container.innerHTML = Object.values(latestByMember)
-        .map(createUpdateCard)
+        .map(u => createUpdateCard(u))
         .join("");
 
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
@@ -764,7 +750,7 @@
 
     function createUpdateCard(update) {
       const memberInfo = teamMembers[update.team_member] ||
-        { department: update.department || "", color: "#6366f1" };
+        { department: update.department || "", color: "#64748b" };
       const hasBlockers = !!(update.blockers && update.blockers.trim());
       const initials = update.team_member
         ? update.team_member.split(" ").map(n => n[0]).join("")
@@ -772,17 +758,17 @@
 
       return `
         <article class="scrum-card p-4 flex flex-col gap-3">
-          <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start justify-between gap-2">
             <div class="flex items-center gap-3">
               <div class="relative">
                 <div class="avatar"
-                     style="background: linear-gradient(135deg, ${memberInfo.color}, #4f46e5);">
+                     style="background: linear-gradient(135deg, ${memberInfo.color}, #7c3aed);">
                   ${esc(initials)}
                 </div>
                 <div class="status-indicator ${hasBlockers ? "bg-rose-500" : "bg-emerald-400"}"></div>
               </div>
               <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-2 flex-wrap">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <h3 class="text-sm font-semibold text-slate-900">
                     ${esc(update.team_member || "Unassigned")}
                   </h3>
@@ -792,53 +778,52 @@
                   }
                 </div>
                 <span class="department-pill">
-                  <span class="w-2 h-2 rounded-full"
+                  <span class="w-1.5 h-1.5 rounded-full"
                         style="background-color:${memberInfo.color};"></span>
                   ${esc(update.department || memberInfo.department || "Department")}
                 </span>
               </div>
             </div>
-            <button class="text-[0.7rem] px-2 py-1 rounded-full bg-slate-50 text-slate-600
-                           hover:text-violet-600 hover:bg-violet-50 transition-all border border-slate-200"
+            <button class="text-[0.7rem] px-2 py-1 rounded-full bg-slate-50 text-slate-500
+                           hover:text-violet-600 hover:bg-violet-50 transition-all"
                     data-edit-id="${esc(update.id)}">
               ✏ Edit
             </button>
           </div>
 
-          <div class="space-y-2 text-body">
+          <div class="space-y-2 text-small">
             <div>
-              <div class="text-label">Yesterday</div>
-              <p>${esc(update.yesterday_work || "No update provided.")}</p>
+              <p class="text-label mb-0.5">Yesterday</p>
+              <p class="text-slate-800">
+                ${esc(update.yesterday_work || "No update provided.")}
+              </p>
             </div>
             <div>
-              <div class="text-label">Today</div>
-              <p>${esc(update.today_plan || "No plan specified.")}</p>
+              <p class="text-label mb-0.5">Today</p>
+              <p class="text-slate-800">
+                ${esc(update.today_plan || "No plan specified.")}
+              </p>
             </div>
             <div>
-              <div class="text-label">Blockers</div>
+              <p class="text-label mb-0.5">Blockers</p>
               <p class="${hasBlockers ? "text-rose-600" : "text-slate-500"}">
                 ${esc(update.blockers || "None")}
               </p>
             </div>
-            ${update.remarks
-              ? `<div>
-                   <div class="text-label">Notes</div>
-                   <p class="text-violet-700">${esc(update.remarks)}</p>
-                 </div>`
-              : ""
-            }
+            ${update.remarks ? `
+              <div>
+                <p class="text-label mb-0.5">Notes</p>
+                <p class="text-violet-700">${esc(update.remarks)}</p>
+              </div>` : ""}
           </div>
 
           <div class="flex justify-between items-center text-[0.7rem] text-slate-500 pt-1">
-            <span>${update.date
-              ? new Date(update.date).toLocaleDateString()
-              : ""}</span>
-            <span>${
-              update.created_at
-                ? new Date(update.created_at).toLocaleTimeString("en-US",
-                    {hour:"2-digit", minute:"2-digit"})
-                : ""
-            }</span>
+            <span>${esc(toLocalYMD(update.date || update.created_at) || "")}</span>
+            <span>
+              ${update.created_at
+                ? new Date(update.created_at).toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"})
+                : ""}
+            </span>
           </div>
         </article>
       `;
@@ -849,14 +834,16 @@
       const container = document.getElementById("summary-content");
       if (!selectedDate) return;
 
-      const dayUpdates = currentData.filter(u => u.date === selectedDate);
+      const dayUpdates = currentData.filter(u => recordMatchesDay(u, selectedDate));
 
       if (!dayUpdates.length) {
         container.innerHTML = `
-          <div class="glass p-6 flex flex-col items-center gap-2 text-center">
+          <div class="glass p-6 flex flex-col items-center gap-2">
             <div class="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-500">📅</div>
-            <p class="text-sm text-slate-900">No updates for ${esc(selectedDate)}.</p>
-            <p class="text-xs text-slate-500">Ask the team to submit standup entries, or pick another date.</p>
+            <p class="text-sm text-slate-800">No updates for ${esc(selectedDate)}.</p>
+            <p class="text-small text-slate-500">
+              Ask the team to submit standup entries, or pick another date.
+            </p>
           </div>`;
         return;
       }
@@ -878,33 +865,32 @@
           </h3>
           ${
             Object.entries(groups).map(([member, list]) => {
-              const latest = list.sort(
-                (a,b) => new Date(b.created_at) - new Date(a.created_at)
-              )[0];
-              const info = teamMembers[member] || {color:"#6366f1"};
+              const latest = list.sort((a,b) =>
+                new Date(b.created_at || b.date) - new Date(a.created_at || a.date))[0];
+              const info = teamMembers[member] || {color:"#64748b"};
 
               return `
-                <div class="border-l-2 pl-3 space-y-2"
+                <div class="border-l-2 pl-3 space-y-1.5"
                      style="border-color:${info.color};">
-                  <div class="flex items-center gap-2 flex-wrap">
+                  <div class="flex items-center gap-2">
                     <span class="text-sm font-semibold text-slate-900">
                       ${esc(member || "Unassigned")}
                     </span>
-                    <span class="text-[0.7rem] px-2 py-1 rounded-full
+                    <span class="text-[0.7rem] px-2 py-0.5 rounded-full
                                  bg-slate-50 text-slate-700 border border-slate-200">
                       ${esc(latest.department || "Department")}
                     </span>
                   </div>
-                  <div class="grid md:grid-cols-3 gap-2 text-sm">
+                  <div class="grid md:grid-cols-3 gap-2 text-small">
                     <div>
                       <div class="text-label">Yesterday</div>
-                      <div class="text-body">
+                      <div class="text-slate-800">
                         ${esc(latest.yesterday_work || "No update")}
                       </div>
                     </div>
                     <div>
                       <div class="text-label">Today</div>
-                      <div class="text-body">
+                      <div class="text-slate-800">
                         ${esc(latest.today_plan || "No plan")}
                       </div>
                     </div>
@@ -915,12 +901,10 @@
                       </div>
                     </div>
                   </div>
-                  ${latest.remarks
-                    ? `<div class="text-xs text-violet-700">
-                         Notes: ${esc(latest.remarks)}
-                       </div>`
-                    : ""
-                  }
+                  ${latest.remarks ? `
+                    <div class="text-[0.75rem] text-violet-700">
+                      Notes: ${esc(latest.remarks)}
+                    </div>` : ""}
                 </div>
               `;
             }).join("")
@@ -949,9 +933,10 @@
       const date = document.getElementById("filter-date").value;
 
       let items = [...currentData];
+
       if (member) items = items.filter(u => u.team_member === member);
       if (dept) items = items.filter(u => u.department === dept);
-      if (date) items = items.filter(u => u.date === date);
+      if (date)  items = items.filter(u => recordMatchesDay(u, date));
 
       displayManagerContent(items);
     }
@@ -963,10 +948,10 @@
       if (!data.length) {
         blockerArea.innerHTML = "";
         container.innerHTML = `
-          <div class="glass p-6 flex flex-col items-center gap-2 text-center">
-            <div class="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-2xl text-slate-500">🔍</div>
+          <div class="glass p-6 flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-500">🔍</div>
             <p class="text-sm text-slate-900">No entries match the current filters.</p>
-            <p class="text-xs text-slate-500">Adjust filters to explore more.</p>
+            <p class="text-small text-slate-500">Adjust filters to see more.</p>
           </div>`;
         return;
       }
@@ -974,7 +959,7 @@
       const openBlockers = data.filter(u => u.blockers && u.blockers.trim());
       if (openBlockers.length) {
         blockerArea.innerHTML = `
-          <div class="rounded-2xl bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-700 mb-3">
+          <div class="rounded-2xl bg-rose-50 border border-rose-200 px-3 py-2 text-[0.8rem] text-rose-700">
             <div class="font-semibold mb-1 flex items-center gap-1.5">
               🚨 ${openBlockers.length} blocker${openBlockers.length>1?"s":""} need attention
             </div>
@@ -997,18 +982,18 @@
       const uniqueMembers = new Set(data.map(u => u.team_member)).size;
 
       container.innerHTML = `
-        <div class="grid grid-cols-3 gap-3 mb-3">
+        <div class="grid grid-cols-3 gap-2 mb-3 text-[0.8rem]">
           <div class="glass px-3 py-2">
-            <div class="metric-label">Total updates</div>
-            <div class="metric-value">${total}</div>
+            <div class="text-label">Total updates</div>
+            <div class="text-lg font-semibold text-slate-900">${total}</div>
           </div>
           <div class="glass px-3 py-2">
-            <div class="metric-label">Active members</div>
-            <div class="metric-value" style="color:#22c55e">${uniqueMembers}</div>
+            <div class="text-label">Active members</div>
+            <div class="text-lg font-semibold text-emerald-500">${uniqueMembers}</div>
           </div>
           <div class="glass px-3 py-2">
-            <div class="metric-label">Open blockers</div>
-            <div class="metric-value" style="color:${openBlockers.length ? "#f97316" : "#9ca3af"}">
+            <div class="text-label">Open blockers</div>
+            <div class="text-lg font-semibold ${openBlockers.length ? "text-rose-500" : "text-slate-400"}">
               ${openBlockers.length}
             </div>
           </div>
@@ -1017,13 +1002,13 @@
         <div class="space-y-2">
           ${
             data.map(u => {
-              const info = teamMembers[u.team_member] || {color:"#6366f1"};
+              const info = teamMembers[u.team_member] || {color:"#64748b"};
               const hasBlockers = u.blockers && u.blockers.trim();
               const initials = u.team_member
                 ? u.team_member.split(" ").map(n => n[0]).join("")
                 : "?";
               return `
-                <div class="glass px-3 py-2 flex flex-col gap-1.5 text-xs">
+                <div class="glass px-3 py-2 flex flex-col gap-1.5 text-[0.8rem]">
                   <div class="flex items-start justify-between gap-2">
                     <div class="flex items-center gap-2">
                       <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[0.7rem] text-white"
@@ -1037,13 +1022,14 @@
                             ${esc(u.department || "")}
                           </span>
                         </div>
-                        <div class="text-slate-500">
-                          ${esc(u.date || "")}${hasBlockers ? " • ⚠ Blocker" : ""}
+                        <div class="text-slate-500 text-[0.75rem]">
+                          ${esc(toLocalYMD(u.date || u.created_at) || "")}
+                          ${hasBlockers ? " • ⚠ Blocker" : ""}
                         </div>
                       </div>
                     </div>
-                    <button class="px-2 py-0.5 rounded-full bg-white text-slate-500 hover:text-violet-600
-                                   hover:bg-violet-50 border border-slate-200 transition-all"
+                    <button class="px-2 py-0.5 rounded-full bg-slate-50 text-slate-500 hover:text-violet-600
+                                   hover:bg-violet-50 transition-all"
                             data-edit-id="${esc(u.id)}">
                       Edit
                     </button>
@@ -1051,26 +1037,24 @@
                   <div class="grid md:grid-cols-2 gap-1.5">
                     <div>
                       <span class="text-label">Yesterday:</span>
-                      <span class="text-body"> ${esc(u.yesterday_work || "—")} </span>
+                      <span class="text-slate-800"> ${esc(u.yesterday_work || "—")} </span>
                     </div>
                     <div>
                       <span class="text-label">Today:</span>
-                      <span class="text-body"> ${esc(u.today_plan || "—")} </span>
+                      <span class="text-slate-800"> ${esc(u.today_plan || "—")} </span>
                     </div>
                   </div>
                   ${
-                    hasBlockers
-                      ? `<div class="text-rose-600">
-                           <span class="font-semibold">Blocker:</span> ${esc(u.blockers)}
-                         </div>`
-                      : ""
+                    hasBlockers ? `
+                      <div class="text-rose-600">
+                        <span class="font-medium">Blocker:</span> ${esc(u.blockers)}
+                      </div>` : ""
                   }
                   ${
-                    u.remarks
-                      ? `<div class="text-violet-700">
-                           <span class="font-semibold">Notes:</span> ${esc(u.remarks)}
-                         </div>`
-                      : ""
+                    u.remarks ? `
+                      <div class="text-violet-700">
+                        <span class="font-medium">Notes:</span> ${esc(u.remarks)}
+                      </div>` : ""
                   }
                 </div>
               `;
@@ -1088,53 +1072,20 @@
       });
     }
 
-    // EXPORT: single day
-    function exportSummaryDay() {
+    // ============ EXPORT CSV ============
+    function exportSummary() {
       const selectedDate = document.getElementById("summary-date").value;
       if (!selectedDate) {
         showToast("Pick a date first.", "error");
         return;
       }
 
-      const rows = currentData.filter(u => u.date === selectedDate);
+      const rows = currentData.filter(u => recordMatchesDay(u, selectedDate));
       if (!rows.length) {
         showToast("No data for that date.", "error");
         return;
       }
 
-      exportRowsToCsv(rows, `scrum-summary-${selectedDate}.csv`);
-      showToast("Day summary exported.", "success");
-    }
-
-    // EXPORT: date range
-    function exportSummaryRange() {
-      const from = document.getElementById("export-from").value;
-      const to = document.getElementById("export-to").value;
-
-      if (!from || !to) {
-        showToast("Select both From and To dates.", "error");
-        return;
-      }
-
-      if (from > to) {
-        showToast("From date cannot be after To date.", "error");
-        return;
-      }
-
-      const rows = currentData.filter(u =>
-        u.date && u.date >= from && u.date <= to
-      );
-
-      if (!rows.length) {
-        showToast("No data in selected range.", "error");
-        return;
-      }
-
-      exportRowsToCsv(rows, `scrum-summary-${from}_to_${to}.csv`);
-      showToast("Range summary exported.", "success");
-    }
-
-    function exportRowsToCsv(rows, filename) {
       const headers = [
         "date",
         "team_member",
@@ -1148,27 +1099,30 @@
       const lines = [
         headers.join(","),
         ...rows.map(r => [
-          r.date,
-          r.team_member,
-          r.department,
+          toLocalYMD(r.date || r.created_at) || "",
+          r.team_member || "",
+          r.department || "",
           (r.yesterday_work || "").replace(/"/g, '""'),
           (r.today_plan || "").replace(/"/g, '""'),
           (r.blockers || "").replace(/"/g, '""'),
           (r.remarks || "").replace(/"/g, '""')
-        ].map(v => `"${v || ""}"`).join(","))
+        ].map(v => `"${v}"`).join(","))
       ];
 
       const blob = new Blob([lines.join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename;
+      a.download = `scrum-summary-${selectedDate}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      showToast("Summary exported.", "success");
     }
 
+    // ============ UTILITIES ============
     function updateCurrentDate() {
       const now = new Date();
       document.getElementById("current-date").textContent =
@@ -1212,7 +1166,7 @@
     function updateTimerDisplay() {
       const minutes = Math.floor(timerSeconds / 60);
       const seconds = timerSeconds % 60;
-      const s = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+      const s = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
       const el = document.getElementById("timer-text");
       if (el) el.textContent = s;
     }
@@ -1221,6 +1175,7 @@
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.classList.remove("active");
       });
+
       const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
       if (activeBtn) activeBtn.classList.add("active");
 
@@ -1235,7 +1190,7 @@
     function showToast(message, type = "info") {
       const base =
         "fixed top-4 right-4 z-50 px-3 py-2 rounded-2xl text-[0.8rem] font-medium " +
-        "shadow-lg shadow-slate-300/70 transform translate-x-full opacity-0 transition-all";
+        "shadow-lg transform translate-x-full opacity-0 transition-all";
       const colors = {
         success: "bg-emerald-500 text-white",
         error: "bg-rose-500 text-white",
@@ -1269,7 +1224,7 @@
         editHint.classList.remove("hidden");
         saveText.textContent = "Save changes";
 
-        document.getElementById("update-date").value = existing.date || "";
+        document.getElementById("update-date").value = existing.date || toLocalYMD(existing.created_at) || "";
         document.getElementById("team-member").value = existing.team_member || "";
         document.getElementById("department").value = existing.department || "";
         document.getElementById("yesterday-work").value = existing.yesterday_work || "";
@@ -1282,8 +1237,8 @@
         editHint.classList.add("hidden");
         saveText.textContent = "Save update";
 
-        const today = new Date().toISOString().split("T")[0];
-        document.getElementById("update-date").value = today;
+        const todayYMD = toLocalYMD(new Date());
+        document.getElementById("update-date").value = todayYMD;
         document.getElementById("team-member").value = "";
         document.getElementById("department").value = "";
         document.getElementById("yesterday-work").value = "";
