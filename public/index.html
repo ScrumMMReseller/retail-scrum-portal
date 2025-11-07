@@ -7,232 +7,268 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-  :root {
-    /* ClickUp-ish palette */
-    --brand-bg: #f9fafb;
-    --brand-surface: #ffffff;
-    --brand-border-subtle: #e5e7eb;
-    --brand-text-main: #0f172a;
-    --brand-accent: #7c3aed;       /* purple */
-    --brand-accent-2: #22c55e;     /* green */
-    --brand-accent-3: #06b6d4;     /* teal/blue */
-    --brand-accent-soft: rgba(124, 58, 237, 0.06);
-    --radius-xl: 22px;
-  }
+    :root {
+      /* ClickUp-inspired light palette */
+      --brand-bg: #f5f5fb;
+      --brand-surface: #ffffff;
+      --brand-surface-soft: #f9fafb;
+      --brand-border-subtle: #e5e7eb;
+      --brand-text-main: #111827;
+      --brand-text-soft: #6b7280;
+      --brand-accent: #7c3aed;      /* purple */
+      --brand-accent-2: #22c55e;    /* green */
+      --brand-accent-3: #06b6d4;    /* teal */
+      --brand-accent-soft: rgba(124,58,237,0.06);
+      --radius-xl: 22px;
+    }
 
-  * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-  body {
-    margin: 0;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--brand-bg);   /* 🔁 was dark, now light */
-    color: var(--brand-text-main);
-  }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #eef2ff 0, #f5f5fb 32%, #f9fafb 100%);
+      color: var(--brand-text-main);
+    }
 
-  /* Top bar: light, with subtle gradient + accent underline */
-  header {
-    background: linear-gradient(to right, #ffffff, #faf5ff);
-    border-bottom: 1px solid var(--brand-border-subtle);
-  }
+    .app-shell {
+      min-height: 100vh;
+      color: var(--brand-text-main);
+    }
 
-  /* Generic glass panels become white cards */
-  .glass {
-    background: var(--brand-surface);
-    backdrop-filter: blur(0);
-    border: 1px solid var(--brand-border-subtle);
-  }
+    /* HEADER */
+    header.app-header {
+      background:
+        linear-gradient(to right, #ffffff, #faf5ff);
+      border-bottom: 1px solid var(--brand-border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(10px);
+    }
 
-  /* Main cards */
-  .scrum-card {
-    transition: all 0.18s ease;
-    border-radius: 18px;
-    border: 1px solid var(--brand-border-subtle);
-    background:
-      radial-gradient(circle at top left, var(--brand-accent-soft), transparent),
-      var(--brand-surface);
-  }
+    /* Generic card */
+    .glass {
+      background: var(--brand-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--brand-border-subtle);
+      box-shadow: 0 8px 24px rgba(15,23,42,0.03);
+    }
 
-  .scrum-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 35px rgba(15,23,42,0.08);
-    border-color: rgba(124,58,237,0.45);
-  }
+    /* Main scrum card */
+    .scrum-card {
+      transition: all 0.18s ease;
+      border-radius: 18px;
+      border: 1px solid var(--brand-border-subtle);
+      background:
+        radial-gradient(circle at top left, var(--brand-accent-soft), transparent),
+        var(--brand-surface);
+      box-shadow: 0 4px 14px rgba(15,23,42,0.04);
+    }
 
-  .department-pill {
-    font-size: 0.68rem;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    color: #6b7280;
-  }
+    .scrum-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(15,23,42,0.12);
+      border-color: rgba(124,58,237,0.35);
+    }
 
-  .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: #ffffff;
-    font-size: 0.8rem;
-    background: linear-gradient(
-      135deg,
-      var(--brand-accent),
-      var(--brand-accent-3)
-    );
-  }
+    .department-pill {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--brand-surface-soft);
+      border: 1px solid var(--brand-border-subtle);
+      color: var(--brand-text-soft);
+    }
 
-  .status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    border: 2px solid #ffffff;
-    position: absolute;
-    bottom: -1px;
-    right: -1px;
-  }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #ffffff;
+      font-size: 0.9rem;
+      background: linear-gradient(135deg, var(--brand-accent), var(--brand-accent-3));
+    }
 
-  .modal-overlay {
-    background: rgba(15,23,42,0.18);
-    backdrop-filter: blur(6px);
-  }
+    .status-indicator {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      border: 2px solid #ffffff;
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+    }
 
-  .pill {
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 1px solid transparent;
-    font-size: 0.75rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    color: #6b7280;
-    transition: all 0.16s ease;
-    background: #f9fafb;
-  }
+    .modal-overlay {
+      background: rgba(15,23,42,0.12);
+      backdrop-filter: blur(6px);
+    }
 
-  .pill span.dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 999px;
-    background-color: var(--brand-accent);
-  }
+    /* Tabs / Pills */
+    .pill {
+      padding: 7px 16px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--brand-text-soft);
+      transition: all 0.16s ease;
+      background: transparent;
+      white-space: nowrap;
+    }
 
-  .pill.active {
-    color: var(--brand-accent);
-    border-color: rgba(124,58,237,0.6);
-    box-shadow: 0 0 18px rgba(124,58,237,0.16);
-    background: #ffffff;
-  }
+    .pill span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background-color: var(--brand-accent);
+    }
 
-  .timer-active {
-    box-shadow: 0 0 14px rgba(34,197,94,0.45);
-  }
-</style>
+    .pill.active {
+      color: var(--brand-accent);
+      border-color: rgba(124,58,237,0.45);
+      box-shadow: 0 0 18px rgba(124,58,237,0.14);
+      background: #ffffff;
+    }
 
+    .timer-active {
+      box-shadow: 0 0 16px rgba(34,197,94,0.35);
+    }
+
+    /* Utility overrides for readability */
+    .text-label {
+      font-size: 0.8rem;
+      color: var(--brand-text-soft);
+      font-weight: 500;
+    }
+
+    .text-body {
+      font-size: 0.88rem;
+      color: var(--brand-text-main);
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      color: var(--brand-text-soft);
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--brand-text-main);
+    }
+  </style>
 </head>
-<body class="min-h-screen text-slate-100">
-  <div id="app" class="min-h-screen">
-    <!-- TOP BAR -->
-    <header class="w-full border-b border-slate-800 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+<body>
+  <div id="app" class="app-shell">
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-6">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-500
-                      flex items-center justify-center font-extrabold text-slate-900 text-lg shadow-lg">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-fuchsia-500 via-purple-500 to-indigo-500
+                      flex items-center justify-center font-extrabold text-white text-lg shadow-md">
             S
           </div>
           <div>
-            <div class="flex items-center gap-2">
-              <h1 id="portal-title" class="text-lg sm:text-xl font-semibold tracking-tight">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 id="portal-title" class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
                 Retail Team Scrum Portal
               </h1>
-              <span class="text-[0.7rem] px-2 py-0.5 rounded-full bg-slate-900/80 border border-indigo-500/40 text-indigo-300">
-                live
+              <span class="text-[0.75rem] px-2 py-0.5 rounded-full bg-violet-50 border border-violet-200 text-violet-700">
+                Live · Supabase
               </span>
             </div>
-            <p id="current-date" class="text-xs text-slate-400"></p>
+            <p id="current-date" class="text-sm text-slate-500"></p>
           </div>
         </div>
 
         <div class="flex items-center gap-3">
           <div id="timer-display"
-               class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/85 border border-slate-700 text-xs">
-            <span class="text-slate-400">Standup timer</span>
-            <span id="timer-text" class="font-semibold text-emerald-400">15:00</span>
+               class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs shadow-sm">
+            <span class="text-slate-500">Standup timer</span>
+            <span id="timer-text" class="font-semibold text-emerald-500">15:00</span>
           </div>
 
           <button id="start-scrum-btn"
-                  class="px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500
-                         text-xs font-semibold text-slate-950 shadow-md hover:shadow-blue-500/30
-                         transition-all flex items-center gap-1.5">
+                  class="px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500
+                         text-xs sm:text-sm font-semibold text-white shadow-md
+                         hover:shadow-violet-300/40 transition-all flex items-center gap-1.5">
             🚀 Start Scrum
           </button>
 
           <button id="add-update-btn"
-                  class="px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-xs
-                         font-medium text-slate-200 hover:border-indigo-500/70 hover:text-indigo-300
-                         flex items-center gap-1.5 transition-all">
+                  class="px-4 py-2 rounded-full bg-white border border-slate-200 text-xs sm:text-sm
+                         font-medium text-slate-800 hover:border-violet-400 hover:text-violet-600
+                         hover:shadow-sm flex items-center gap-1.5 transition-all">
             ➕ <span>Add update</span>
           </button>
         </div>
       </div>
 
-      <!-- TABS & PILLS -->
+      <!-- TABS -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-4 text-xs">
+        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar">
           <button class="tab-btn pill active" data-tab="dashboard">
-            <span class="dot bg-blue-500"></span> Board
+            <span class="dot"></span> Board
           </button>
           <button class="tab-btn pill" data-tab="summary">
-            <span class="dot bg-emerald-400"></span> Summary
+            <span class="dot" style="background-color:#22c55e;"></span> Summary
           </button>
           <button class="tab-btn pill" data-tab="manager">
-            <span class="dot bg-violet-400"></span> Manager view
+            <span class="dot" style="background-color:#06b6d4;"></span> Manager view
           </button>
         </div>
 
-        <div class="hidden md:flex items-center gap-2 text-[0.68rem] text-slate-500">
-          <span class="px-2 py-0.5 rounded-full bg-slate-900/80 border border-slate-700">
-            ⏱️ 15-min async+live standup
+        <div class="hidden md:flex items-center gap-2 text-[0.75rem] text-slate-500">
+          <span class="px-2 py-1 rounded-full bg-white border border-slate-200">
+            ⏱️ 15-min async + live standup
           </span>
-          <span class="px-2 py-0.5 rounded-full bg-slate-900/80 border border-slate-700">
-            🔐 Backed by Supabase
+          <span class="px-2 py-1 rounded-full bg-white border border-slate-200">
+            ✅ ClickUp-style clean layout
           </span>
         </div>
       </div>
     </header>
 
     <!-- MAIN -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <!-- DASHBOARD TAB -->
       <section id="dashboard-tab" class="tab-content">
         <div class="flex items-center justify-between gap-3 mb-4">
           <div>
-            <h2 class="text-base sm:text-lg font-semibold text-slate-50">Today's standup</h2>
-            <p class="text-xs text-slate-400">
-              Quick visual of what everyone is doing, in a clean board-style layout.
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Today's standup</h2>
+            <p class="text-sm text-slate-500">
+              See the latest update from each team member at a glance.
             </p>
           </div>
         </div>
 
-        <div id="team-updates" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+        <div id="team-updates" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3"></div>
 
         <div id="empty-state"
              class="mt-8 flex flex-col items-center justify-center gap-3 py-10
-                    glass rounded-3xl border border-dashed border-slate-700">
-          <div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-2xl">
+                    glass border-dashed border-slate-300 text-center">
+          <div class="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-600">
             📝
           </div>
-          <h3 class="text-sm font-medium text-slate-100">No updates yet for today</h3>
-          <p class="text-xs text-slate-400">Kick things off by adding the first standup entry.</p>
-          <button class="add-update-trigger px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500
-                         text-xs font-semibold text-slate-950 shadow hover:shadow-blue-500/30 transition-all">
+          <h3 class="text-base font-medium text-slate-900">No updates yet for today</h3>
+          <p class="text-sm text-slate-500">Kick off the day by logging the first standup entry.</p>
+          <button class="add-update-trigger px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500
+                         text-sm font-semibold text-white shadow hover:shadow-violet-300/40 transition-all">
             Add first update
           </button>
         </div>
@@ -242,19 +278,19 @@
       <section id="summary-tab" class="tab-content hidden">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
           <div>
-            <h2 class="text-base sm:text-lg font-semibold text-slate-50">Daily summary</h2>
-            <p class="text-xs text-slate-400">
-              Snapshot by person for a specific date. Perfect for leadership recap.
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Daily summary</h2>
+            <p class="text-sm text-slate-500">
+              Roll-up by team member for a selected date.
             </p>
           </div>
           <div class="flex items-center gap-2">
             <input type="date"
                    id="summary-date"
-                   class="px-3 py-1.5 text-xs rounded-full bg-slate-950 border border-slate-700
-                          text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                   class="px-3 py-2 text-sm rounded-full bg-white border border-slate-300
+                          text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400" />
             <button id="export-btn"
-                    class="px-3 py-1.5 rounded-full bg-emerald-500/95 hover:bg-emerald-400
-                           text-[0.7rem] font-semibold text-slate-950 flex items-center gap-1.5">
+                    class="px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400
+                           text-xs sm:text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm">
               📄 Export CSV
             </button>
           </div>
@@ -266,24 +302,24 @@
       <section id="manager-tab" class="tab-content hidden">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
           <div>
-            <h2 class="text-base sm:text-lg font-semibold text-slate-50">Manager view</h2>
-            <p class="text-xs text-slate-400">
-              Filter by member, department or date. Quickly see blockers and activity.
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Manager view</h2>
+            <p class="text-sm text-slate-500">
+              Filter by member, department, or date to spot risks and coverage.
             </p>
           </div>
         </div>
 
-        <div class="glass rounded-3xl p-4 mb-4">
+        <div class="glass p-4 mb-4">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <select id="filter-member"
-                    class="w-full px-3 py-1.5 text-xs rounded-full bg-slate-950 border border-slate-700
-                           text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    class="w-full px-3 py-2 text-sm rounded-full bg-white border border-slate-300
+                           text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400">
               <option value="">All team members</option>
             </select>
 
             <select id="filter-department"
-                    class="w-full px-3 py-1.5 text-xs rounded-full bg-slate-950 border border-slate-700
-                           text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    class="w-full px-3 py-2 text-sm rounded-full bg-white border border-slate-300
+                           text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400">
               <option value="">All departments</option>
               <option value="Management">Management</option>
               <option value="Retail / MM">Retail / MM</option>
@@ -295,11 +331,11 @@
 
             <input type="date"
                    id="filter-date"
-                   class="w-full px-3 py-1.5 text-xs rounded-full bg-slate-950 border border-slate-700
-                          text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                   class="w-full px-3 py-2 text-sm rounded-full bg-white border border-slate-300
+                          text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400" />
           </div>
 
-          <div id="blocker-escalation-area" class="text-xs"></div>
+          <div id="blocker-escalation-area" class="text-sm"></div>
         </div>
 
         <div id="manager-content" class="space-y-3"></div>
@@ -309,36 +345,36 @@
     <!-- CREATE / EDIT MODAL -->
     <div id="update-modal"
          class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center px-3">
-      <div class="glass rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-5">
+      <div class="glass max-w-xl w-full max-h-[90vh] overflow-y-auto p-5">
         <div class="flex items-center justify-between mb-3">
           <div>
-            <h3 id="modal-title" class="text-sm font-semibold text-slate-50">
+            <h3 id="modal-title" class="text-base font-semibold text-slate-900">
               New standup update
             </h3>
-            <p class="text-[0.7rem] text-slate-500">
+            <p class="text-xs text-slate-500">
               Capture yesterday, today, and blockers in one quick form.
             </p>
           </div>
           <button id="close-modal"
-                  class="w-7 h-7 rounded-full bg-slate-900 flex items-center justify-center
-                         text-slate-400 hover:text-red-400 hover:bg-slate-800 text-sm">
+                  class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center
+                         text-slate-500 hover:text-red-500 hover:bg-red-50 text-sm">
             ✕
           </button>
         </div>
 
-        <form id="update-form" class="space-y-3 text-[0.72rem]">
+        <form id="update-form" class="space-y-3 text-sm">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block mb-1 text-slate-400">Date</label>
+              <label class="text-label mb-1 block">Date</label>
               <input type="date" id="update-date" name="date" required
-                     class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
-                            text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                     class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
+                            text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400" />
             </div>
             <div>
-              <label class="block mb-1 text-slate-400">Team member</label>
+              <label class="text-label mb-1 block">Team member</label>
               <select id="team-member" name="team_member" required
-                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
-                             text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
+                             text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400">
                 <option value="">Select</option>
                 <option value="Amrit">Amrit</option>
                 <option value="Vihan">Vihan</option>
@@ -351,10 +387,10 @@
           </div>
 
           <div>
-            <label class="block mb-1 text-slate-400">Department</label>
+            <label class="text-label mb-1 block">Department</label>
             <select id="department" name="department" required
-                    class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
-                           text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
+                           text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400">
               <option value="">Select department</option>
               <option value="Management">Management</option>
               <option value="Retail / MM">Retail / MM</option>
@@ -366,52 +402,52 @@
           </div>
 
           <div>
-            <label class="block mb-1 text-slate-400">Yesterday's work</label>
+            <label class="text-label mb-1 block">Yesterday's work</label>
             <textarea id="yesterday-work" name="yesterday_work" rows="2"
                       placeholder="What did you complete?"
-                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
-                             text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
+                             text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"></textarea>
           </div>
 
           <div>
-            <label class="block mb-1 text-slate-400">Today's plan</label>
+            <label class="text-label mb-1 block">Today's plan</label>
             <textarea id="today-plan" name="today_plan" rows="2"
                       placeholder="What will you work on?"
-                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
-                             text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
+                             text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"></textarea>
           </div>
 
           <div>
-            <label class="block mb-1 text-slate-400">Blockers</label>
+            <label class="text-label mb-1 block">Blockers</label>
             <textarea id="blockers" name="blockers" rows="2"
                       placeholder="Any risks, delays, dependencies?"
-                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
-                             text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-rose-500/70"></textarea>
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-rose-200
+                             text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-rose-300"></textarea>
           </div>
 
           <div>
-            <label class="block mb-1 text-slate-400">Remarks / notes</label>
+            <label class="text-label mb-1 block">Remarks / notes</label>
             <textarea id="remarks" name="remarks" rows="2"
                       placeholder="Optional context for leads"
-                      class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700
-                             text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300
+                             text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"></textarea>
           </div>
 
           <div class="flex justify-between items-center pt-2 gap-3">
             <button type="button" id="cancel-btn"
-                    class="px-3 py-1.5 rounded-full bg-slate-900 text-slate-400 text-[0.7rem]
-                           hover:bg-slate-800 hover:text-slate-200">
+                    class="px-3 py-2 rounded-full bg-slate-100 text-slate-600 text-xs
+                           hover:bg-slate-200 hover:text-slate-800">
               Cancel
             </button>
             <div class="flex items-center gap-2">
               <span id="edit-hint"
-                    class="hidden text-[0.65rem] px-2 py-0.5 rounded-full bg-slate-900 text-amber-300 border border-amber-500/40">
+                    class="hidden text-[0.7rem] px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                 Editing existing entry
               </span>
               <button type="submit" id="save-btn"
-                      class="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500
-                             text-[0.7rem] font-semibold text-slate-950 flex items-center gap-1.5
-                             hover:shadow-lg hover:shadow-blue-500/40 transition-all">
+                      class="px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500
+                             text-xs sm:text-sm font-semibold text-white flex items-center gap-1.5
+                             hover:shadow-lg hover:shadow-violet-300/40 transition-all">
                 <span id="save-text">Save update</span>
                 <span id="save-loading" class="hidden">Saving…</span>
               </button>
@@ -424,10 +460,8 @@
 
   <!-- SCRIPT -->
   <script>
-    // ================== CONFIG ==================
     const defaultConfig = { meeting_duration: 15 };
 
-    // Supabase config
     const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
 
@@ -439,12 +473,12 @@
     };
 
     const teamMembers = {
-      "Amrit":   { department: "Management",   color: "#38bdf8" },
+      "Amrit":   { department: "Management",   color: "#7c3aed" },
       "Vihan":   { department: "Retail / MM",  color: "#22c55e" },
-      "Maricel": { department: "E-commerce",   color: "#fb923c" },
+      "Maricel": { department: "E-commerce",   color: "#06b6d4" },
       "Kunal":   { department: "Logistics",    color: "#6366f1" },
-      "Mehboob": { department: "Fulfillment",  color: "#a855f7" },
-      "Aaron":   { department: "Customer Exp", color: "#f97316" }
+      "Mehboob": { department: "Fulfillment",  color: "#f97316" },
+      "Aaron":   { department: "Customer Exp", color: "#ec4899" }
     };
 
     let currentData = [];
@@ -462,13 +496,12 @@
         .replace(/"/g, "&quot;");
     }
 
-    // ============ Supabase data SDK ============
+    // Supabase data SDK
     window.dataSdk = {
       _handler: null,
 
       async init(handler) {
         this._handler = handler;
-
         const url =
           `${SUPABASE_URL}/rest/v1/scrum_updates` +
           `?select=id,date,team_member,department,yesterday_work,today_plan,blockers,remarks,created_at` +
@@ -514,12 +547,10 @@
               body: JSON.stringify(row)
             }
           );
-
           if (!resp.ok) {
             console.error("Supabase INSERT failed:", await resp.text());
             return { isOk: false };
           }
-
           await this.init(this._handler);
           return { isOk: true };
         } catch (err) {
@@ -538,12 +569,10 @@
               body: JSON.stringify(partial)
             }
           );
-
           if (!resp.ok) {
             console.error("Supabase UPDATE failed:", await resp.text());
             return { isOk: false };
           }
-
           await this.init(this._handler);
           return { isOk: true };
         } catch (err) {
@@ -560,7 +589,6 @@
       }
     };
 
-    // ============ INIT ============
     document.addEventListener("DOMContentLoaded", initializeApp);
 
     async function initializeApp() {
@@ -579,7 +607,6 @@
       }
     }
 
-    // ============ LISTENERS ============
     function setupStaticListeners() {
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", () => switchTab(btn.dataset.tab));
@@ -594,7 +621,6 @@
       document.getElementById("cancel-btn").addEventListener("click", closeModal);
 
       document.getElementById("update-form").addEventListener("submit", handleFormSubmit);
-
       document.getElementById("start-scrum-btn").addEventListener("click", toggleTimer);
 
       document.getElementById("filter-member").addEventListener("change", applyFilters);
@@ -605,7 +631,6 @@
       document.getElementById("export-btn").addEventListener("click", exportSummary);
     }
 
-    // ============ FORM SUBMIT (CREATE / EDIT) ============
     async function handleFormSubmit(e) {
       e.preventDefault();
 
@@ -659,7 +684,6 @@
       }
     }
 
-    // ============ RENDERING ============
     function updateUI() {
       updateDashboard();
       updateManagerPanel();
@@ -683,22 +707,20 @@
 
       const latestByMember = {};
       todayUpdates.forEach(u => {
-        if (
-          !latestByMember[u.team_member] ||
-          new Date(u.created_at) > new Date(latestByMember[u.team_member].created_at)
-        ) {
+        if (!latestByMember[u.team_member] ||
+            new Date(u.created_at) > new Date(latestByMember[u.team_member].created_at)) {
           latestByMember[u.team_member] = u;
         }
       });
 
       container.innerHTML = Object.values(latestByMember)
-        .map(u => createUpdateCard(u))
+        .map(createUpdateCard)
         .join("");
 
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
         btn.addEventListener("click", () => {
           const id = btn.dataset.editId;
-          const row = currentData.find(r => r.id === id);
+          const row = currentData.find(r => String(r.id) === String(id));
           if (row) openModal(row);
         });
       });
@@ -706,7 +728,7 @@
 
     function createUpdateCard(update) {
       const memberInfo = teamMembers[update.team_member] ||
-        { department: update.department || "", color: "#64748b" };
+        { department: update.department || "", color: "#6366f1" };
       const hasBlockers = !!(update.blockers && update.blockers.trim());
       const initials = update.team_member
         ? update.team_member.split(" ").map(n => n[0]).join("")
@@ -714,75 +736,73 @@
 
       return `
         <article class="scrum-card p-4 flex flex-col gap-3">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex items-center gap-2.5">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
               <div class="relative">
                 <div class="avatar"
-                     style="background: linear-gradient(135deg, ${memberInfo.color}, #111827);">
+                     style="background: linear-gradient(135deg, ${memberInfo.color}, #4f46e5);">
                   ${esc(initials)}
                 </div>
                 <div class="status-indicator ${hasBlockers ? "bg-rose-500" : "bg-emerald-400"}"></div>
               </div>
-              <div class="flex flex-col">
-                <div class="flex items-center gap-1.5">
-                  <h3 class="text-xs font-semibold text-slate-50">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="text-sm font-semibold text-slate-900">
                     ${esc(update.team_member || "Unassigned")}
                   </h3>
-                  ${hasBlockers ? `
-                    <span class="px-1.5 py-0.5 rounded-full bg-rose-500/20 text-[0.55rem] text-rose-300">
-                      ⚠ Blocker
-                    </span>` : `
-                    <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-[0.55rem] text-emerald-300">
-                      ✓ Clear
-                    </span>`}
+                  ${hasBlockers
+                    ? `<span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[0.7rem]">⚠ Blocker</span>`
+                    : `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[0.7rem]">✓ Clear</span>`
+                  }
                 </div>
                 <span class="department-pill">
-                  <span class="w-1.5 h-1.5 rounded-full"
+                  <span class="w-2 h-2 rounded-full"
                         style="background-color:${memberInfo.color};"></span>
-                  ${esc(update.department || memberInfo.department || "Dept")}
+                  ${esc(update.department || memberInfo.department || "Department")}
                 </span>
               </div>
             </div>
-            <button class="text-[0.6rem] px-2 py-1 rounded-full bg-slate-900/90 text-slate-400
-                           hover:text-blue-400 hover:bg-slate-800 transition-all"
+            <button class="text-[0.7rem] px-2 py-1 rounded-full bg-slate-50 text-slate-600
+                           hover:text-violet-600 hover:bg-violet-50 transition-all border border-slate-200"
                     data-edit-id="${esc(update.id)}">
               ✏ Edit
             </button>
           </div>
 
-          <div class="space-y-1.5 text-[0.68rem]">
+          <div class="space-y-2 text-body">
             <div>
-              <p class="text-slate-500">Yesterday</p>
-              <p class="text-slate-100">
-                ${esc(update.yesterday_work || "No update provided.")}
-              </p>
+              <div class="text-label">Yesterday</div>
+              <p>${esc(update.yesterday_work || "No update provided.")}</p>
             </div>
             <div>
-              <p class="text-slate-500">Today</p>
-              <p class="text-slate-100">
-                ${esc(update.today_plan || "No plan specified.")}
-              </p>
+              <div class="text-label">Today</div>
+              <p>${esc(update.today_plan || "No plan specified.")}</p>
             </div>
             <div>
-              <p class="text-slate-500">Blockers</p>
-              <p class="${hasBlockers ? "text-rose-300" : "text-slate-600"}">
+              <div class="text-label">Blockers</div>
+              <p class="${hasBlockers ? "text-rose-600" : "text-slate-500"}">
                 ${esc(update.blockers || "None")}
               </p>
             </div>
-            ${update.remarks ? `
-              <div>
-                <p class="text-slate-500">Notes</p>
-                <p class="text-indigo-200">${esc(update.remarks)}</p>
-              </div>` : ""}
+            ${update.remarks
+              ? `<div>
+                   <div class="text-label">Notes</div>
+                   <p class="text-violet-700">${esc(update.remarks)}</p>
+                 </div>`
+              : ""
+            }
           </div>
 
-          <div class="flex justify-between items-center text-[0.6rem] text-slate-500 pt-1">
-            <span>${new Date(update.date || update.created_at).toLocaleDateString()}</span>
-            <span>
-              ${update.created_at
-                ? new Date(update.created_at).toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"})
-                : ""}
-            </span>
+          <div class="flex justify-between items-center text-[0.7rem] text-slate-500 pt-1">
+            <span>${update.date
+              ? new Date(update.date).toLocaleDateString()
+              : ""}</span>
+            <span>${
+              update.created_at
+                ? new Date(update.created_at).toLocaleTimeString("en-US",
+                    {hour:"2-digit", minute:"2-digit"})
+                : ""
+            }</span>
           </div>
         </article>
       `;
@@ -797,12 +817,10 @@
 
       if (!dayUpdates.length) {
         container.innerHTML = `
-          <div class="glass rounded-3xl p-6 flex flex-col items-center gap-2">
-            <div class="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-2xl">📅</div>
-            <p class="text-sm text-slate-200">No updates for ${esc(selectedDate)}.</p>
-            <p class="text-[0.7rem] text-slate-500">
-              Ask the team to submit standup entries, or pick another date.
-            </p>
+          <div class="glass p-6 flex flex-col items-center gap-2 text-center">
+            <div class="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-500">📅</div>
+            <p class="text-sm text-slate-900">No updates for ${esc(selectedDate)}.</p>
+            <p class="text-xs text-slate-500">Ask the team to submit standup entries, or pick another date.</p>
           </div>`;
         return;
       }
@@ -814,8 +832,8 @@
       });
 
       container.innerHTML = `
-        <div class="glass rounded-3xl p-5 space-y-4">
-          <h3 class="text-sm font-semibold text-slate-50">
+        <div class="glass p-5 space-y-4">
+          <h3 class="text-base font-semibold text-slate-900">
             Standup summary — ${
               new Date(selectedDate).toLocaleDateString("en-US", {
                 weekday:"long", month:"short", day:"numeric", year:"numeric"
@@ -824,46 +842,49 @@
           </h3>
           ${
             Object.entries(groups).map(([member, list]) => {
-              const latest = list.sort((a,b) =>
-                new Date(b.created_at) - new Date(a.created_at))[0];
-              const info = teamMembers[member] || {color:"#64748b"};
+              const latest = list.sort(
+                (a,b) => new Date(b.created_at) - new Date(a.created_at)
+              )[0];
+              const info = teamMembers[member] || {color:"#6366f1"};
 
               return `
-                <div class="border-l-2 pl-3 space-y-1.5"
+                <div class="border-l-2 pl-3 space-y-2"
                      style="border-color:${info.color};">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[0.8rem] font-semibold text-slate-100">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-sm font-semibold text-slate-900">
                       ${esc(member || "Unassigned")}
                     </span>
-                    <span class="text-[0.6rem] px-2 py-0.5 rounded-full
-                                 bg-slate-900 text-slate-300 border border-slate-700">
-                      ${esc(latest.department || "Dept")}
+                    <span class="text-[0.7rem] px-2 py-1 rounded-full
+                                 bg-slate-50 text-slate-700 border border-slate-200">
+                      ${esc(latest.department || "Department")}
                     </span>
                   </div>
-                  <div class="grid md:grid-cols-3 gap-2 text-[0.68rem]">
+                  <div class="grid md:grid-cols-3 gap-2 text-sm">
                     <div>
-                      <div class="text-slate-500">Yesterday</div>
-                      <div class="text-slate-100">
+                      <div class="text-label">Yesterday</div>
+                      <div class="text-body">
                         ${esc(latest.yesterday_work || "No update")}
                       </div>
                     </div>
                     <div>
-                      <div class="text-slate-500">Today</div>
-                      <div class="text-slate-100">
+                      <div class="text-label">Today</div>
+                      <div class="text-body">
                         ${esc(latest.today_plan || "No plan")}
                       </div>
                     </div>
                     <div>
-                      <div class="text-slate-500">Blockers</div>
-                      <div class="${latest.blockers ? "text-rose-300" : "text-slate-500"}">
+                      <div class="text-label">Blockers</div>
+                      <div class="${latest.blockers ? "text-rose-600" : "text-slate-500"}">
                         ${esc(latest.blockers || "None")}
                       </div>
                     </div>
                   </div>
-                  ${latest.remarks ? `
-                    <div class="text-[0.65rem] text-indigo-200">
-                      Notes: ${esc(latest.remarks)}
-                    </div>` : ""}
+                  ${latest.remarks
+                    ? `<div class="text-xs text-violet-700">
+                         Notes: ${esc(latest.remarks)}
+                       </div>`
+                    : ""
+                  }
                 </div>
               `;
             }).join("")
@@ -892,7 +913,6 @@
       const date = document.getElementById("filter-date").value;
 
       let items = [...currentData];
-
       if (member) items = items.filter(u => u.team_member === member);
       if (dept) items = items.filter(u => u.department === dept);
       if (date) items = items.filter(u => u.date === date);
@@ -907,10 +927,10 @@
       if (!data.length) {
         blockerArea.innerHTML = "";
         container.innerHTML = `
-          <div class="glass rounded-3xl p-6 flex flex-col items-center gap-2">
-            <div class="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-2xl">🔍</div>
-            <p class="text-sm text-slate-200">No entries match the current filters.</p>
-            <p class="text-[0.7rem] text-slate-500">Adjust filters to see more.</p>
+          <div class="glass p-6 flex flex-col items-center gap-2 text-center">
+            <div class="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-2xl text-slate-500">🔍</div>
+            <p class="text-sm text-slate-900">No entries match the current filters.</p>
+            <p class="text-xs text-slate-500">Adjust filters to explore more.</p>
           </div>`;
         return;
       }
@@ -918,7 +938,7 @@
       const openBlockers = data.filter(u => u.blockers && u.blockers.trim());
       if (openBlockers.length) {
         blockerArea.innerHTML = `
-          <div class="rounded-2xl bg-rose-500/10 border border-rose-500/40 px-3 py-2 text-[0.65rem] text-rose-200">
+          <div class="rounded-2xl bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-700 mb-3">
             <div class="font-semibold mb-1 flex items-center gap-1.5">
               🚨 ${openBlockers.length} blocker${openBlockers.length>1?"s":""} need attention
             </div>
@@ -927,7 +947,7 @@
                 openBlockers.slice(0,6).map(b => `
                   <li>
                     <span class="font-semibold">${esc(b.team_member)}</span>
-                    <span class="text-slate-400">(${esc(b.department || "")})</span> —
+                    <span class="text-slate-500">(${esc(b.department || "")})</span> —
                     ${esc(b.blockers)}
                   </li>`).join("")
               }
@@ -941,18 +961,18 @@
       const uniqueMembers = new Set(data.map(u => u.team_member)).size;
 
       container.innerHTML = `
-        <div class="grid grid-cols-3 gap-2 mb-3 text-[0.65rem]">
-          <div class="glass rounded-2xl px-3 py-2">
-            <div class="text-slate-400">Total updates</div>
-            <div class="text-lg font-semibold text-slate-50">${total}</div>
+        <div class="grid grid-cols-3 gap-3 mb-3">
+          <div class="glass px-3 py-2">
+            <div class="metric-label">Total updates</div>
+            <div class="metric-value">${total}</div>
           </div>
-          <div class="glass rounded-2xl px-3 py-2">
-            <div class="text-slate-400">Active members</div>
-            <div class="text-lg font-semibold text-emerald-400">${uniqueMembers}</div>
+          <div class="glass px-3 py-2">
+            <div class="metric-label">Active members</div>
+            <div class="metric-value" style="color:#22c55e">${uniqueMembers}</div>
           </div>
-          <div class="glass rounded-2xl px-3 py-2">
-            <div class="text-slate-400">Open blockers</div>
-            <div class="text-lg font-semibold ${openBlockers.length ? "text-rose-400" : "text-slate-400"}">
+          <div class="glass px-3 py-2">
+            <div class="metric-label">Open blockers</div>
+            <div class="metric-value" style="color:${openBlockers.length ? "#f97316" : "#9ca3af"}">
               ${openBlockers.length}
             </div>
           </div>
@@ -961,59 +981,60 @@
         <div class="space-y-2">
           ${
             data.map(u => {
-              const info = teamMembers[u.team_member] || {color:"#64748b"};
+              const info = teamMembers[u.team_member] || {color:"#6366f1"};
               const hasBlockers = u.blockers && u.blockers.trim();
               const initials = u.team_member
                 ? u.team_member.split(" ").map(n => n[0]).join("")
                 : "?";
               return `
-                <div class="glass rounded-2xl px-3 py-2 flex flex-col gap-1.5 text-[0.65rem]">
+                <div class="glass px-3 py-2 flex flex-col gap-1.5 text-xs">
                   <div class="flex items-start justify-between gap-2">
                     <div class="flex items-center gap-2">
-                      <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[0.6rem] text-white"
-                           style="background: linear-gradient(135deg, ${info.color}, #020817);">
+                      <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[0.7rem] text-white"
+                           style="background: linear-gradient(135deg, ${info.color}, #7c3aed);">
                         ${esc(initials)}
                       </div>
                       <div>
-                        <div class="flex items-center gap-1.5">
-                          <span class="font-semibold text-slate-50">${esc(u.team_member || "Unassigned")}</span>
-                          <span class="px-1.5 py-0.5 rounded-full bg-slate-950 text-slate-400 border border-slate-700">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <span class="font-semibold text-slate-900">${esc(u.team_member || "Unassigned")}</span>
+                          <span class="px-1.5 py-0.5 rounded-full bg-slate-50 text-slate-600 border border-slate-200">
                             ${esc(u.department || "")}
                           </span>
                         </div>
                         <div class="text-slate-500">
-                          ${esc(u.date || "")}
-                          ${hasBlockers ? " • ⚠ Blocker" : ""}
+                          ${esc(u.date || "")}${hasBlockers ? " • ⚠ Blocker" : ""}
                         </div>
                       </div>
                     </div>
-                    <button class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 hover:text-blue-400
-                                   hover:bg-slate-800 transition-all"
+                    <button class="px-2 py-0.5 rounded-full bg-white text-slate-500 hover:text-violet-600
+                                   hover:bg-violet-50 border border-slate-200 transition-all"
                             data-edit-id="${esc(u.id)}">
                       Edit
                     </button>
                   </div>
                   <div class="grid md:grid-cols-2 gap-1.5">
                     <div>
-                      <span class="text-slate-500">Yesterday:</span>
-                      <span class="text-slate-100"> ${esc(u.yesterday_work || "—")} </span>
+                      <span class="text-label">Yesterday:</span>
+                      <span class="text-body"> ${esc(u.yesterday_work || "—")} </span>
                     </div>
                     <div>
-                      <span class="text-slate-500">Today:</span>
-                      <span class="text-slate-100"> ${esc(u.today_plan || "—")} </span>
+                      <span class="text-label">Today:</span>
+                      <span class="text-body"> ${esc(u.today_plan || "—")} </span>
                     </div>
                   </div>
                   ${
-                    hasBlockers ? `
-                      <div class="text-rose-300">
-                        <span class="text-rose-400">Blocker:</span> ${esc(u.blockers)}
-                      </div>` : ""
+                    hasBlockers
+                      ? `<div class="text-rose-600">
+                           <span class="font-semibold">Blocker:</span> ${esc(u.blockers)}
+                         </div>`
+                      : ""
                   }
                   ${
-                    u.remarks ? `
-                      <div class="text-indigo-200">
-                        <span class="text-indigo-400">Notes:</span> ${esc(u.remarks)}
-                      </div>` : ""
+                    u.remarks
+                      ? `<div class="text-violet-700">
+                           <span class="font-semibold">Notes:</span> ${esc(u.remarks)}
+                         </div>`
+                      : ""
                   }
                 </div>
               `;
@@ -1025,13 +1046,12 @@
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
         btn.addEventListener("click", () => {
           const id = btn.dataset.editId;
-          const row = currentData.find(r => r.id === id);
+          const row = currentData.find(r => String(r.id) === String(id));
           if (row) openModal(row);
         });
       });
     }
 
-    // ============ EXPORT CSV ============
     function exportSummary() {
       const selectedDate = document.getElementById("summary-date").value;
       if (!selectedDate) {
@@ -1081,7 +1101,6 @@
       showToast("Summary exported.", "success");
     }
 
-    // ============ UTILITIES ============
     function updateCurrentDate() {
       const now = new Date();
       document.getElementById("current-date").textContent =
@@ -1125,7 +1144,7 @@
     function updateTimerDisplay() {
       const minutes = Math.floor(timerSeconds / 60);
       const seconds = timerSeconds % 60;
-      const s = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      const s = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
       const el = document.getElementById("timer-text");
       if (el) el.textContent = s;
     }
@@ -1134,7 +1153,6 @@
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.classList.remove("active");
       });
-
       const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
       if (activeBtn) activeBtn.classList.add("active");
 
@@ -1148,12 +1166,12 @@
 
     function showToast(message, type = "info") {
       const base =
-        "fixed top-4 right-4 z-50 px-3 py-2 rounded-2xl text-[0.7rem] font-medium " +
-        "shadow-lg shadow-slate-900/80 transform translate-x-full opacity-0 transition-all";
+        "fixed top-4 right-4 z-50 px-3 py-2 rounded-2xl text-[0.8rem] font-medium " +
+        "shadow-lg shadow-slate-300/70 transform translate-x-full opacity-0 transition-all";
       const colors = {
-        success: "bg-emerald-500 text-slate-950",
-        error: "bg-rose-500 text-slate-950",
-        info: "bg-blue-500 text-slate-950"
+        success: "bg-emerald-500 text-white",
+        error: "bg-rose-500 text-white",
+        info: "bg-violet-500 text-white"
       };
 
       const toast = document.createElement("div");
