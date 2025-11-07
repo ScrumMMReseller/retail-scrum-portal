@@ -6,6 +6,8 @@
   <title>Retail Team Scrum Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Supabase JS -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     body {
       box-sizing: border-box;
@@ -234,7 +236,7 @@
                           name="today_plan"
                           rows="3"
                           placeholder="What are you planning to work on today?"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus-border-transparent resize-none"></textarea>
               </div>
 
               <div>
@@ -243,7 +245,7 @@
                           name="blockers"
                           rows="2"
                           placeholder="Any blockers or impediments?"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus-border-transparent resize-none"></textarea>
               </div>
 
               <div>
@@ -252,7 +254,7 @@
                           name="remarks"
                           rows="2"
                           placeholder="Additional notes or comments"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus-border-transparent resize-none"></textarea>
               </div>
 
               <div class="flex justify-end space-x-3 pt-4">
@@ -279,6 +281,12 @@
   </div><!-- /app -->
 
   <script>
+    // ---- Supabase client ----
+    const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";      // TODO: replace
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";                // TODO: replace
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // --- CONFIG / STATE ---
     const defaultConfig = {
       portal_title: "Retail Team Scrum Portal",
@@ -308,37 +316,35 @@
         .replace(/"/g, "&quot;");
     }
 
-    // --- dataSdk replacement using Netlify Function ---
+    // --- dataSdk using Supabase ---
     window.dataSdk = {
       _handler: null,
 
       async init(handler) {
         this._handler = handler;
-        const resp = await fetch("/.netlify/functions/scrum", { method: "GET" });
 
-        if (!resp.ok) {
-          console.error("GET /.netlify/functions/scrum failed", resp.status);
+        const { data, error } = await supabase
+          .from("scrum_updates")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Supabase GET failed:", error);
           handler.onDataChanged([]);
           return { isOk: false };
         }
 
-        const json = await resp.json();
-        const rows = Array.isArray(json.data) ? json.data : [];
-
-        const mapped = rows.map(r => ({
-          id: r.Name,
-          date: r.Date_Of_Standup,
-          team_member: r.Team_Member_Name,
-          department: r.Department,
-          yesterday_work: r.Daily_Tasks,
-          today_plan: r.Today_s_Plan,
-          blockers: r.Issues_Encountered,
-          blocker_status: r.Blocker_Status,
-          blocker_resolution_note: r.Resolution_Note || "",
-          created_at: r.Created_At,
-          resolved_at: r.Resolved_At,
-          remarks: r.Remarks_Notes || "",
-          status: r.Blocker_Status === "Open" ? "active" : "cleared"
+        const mapped = (data || []).map(r => ({
+          id: r.id,
+          date: r.date,
+          team_member: r.team_member,
+          department: r.department,
+          yesterday_work: r.yesterday_work,
+          today_plan: r.today_plan,
+          blockers: r.blockers,
+          remarks: r.remarks,
+          status: "active",
+          created_at: r.created_at
         }));
 
         handler.onDataChanged(mapped);
@@ -346,18 +352,22 @@
       },
 
       async create(row) {
-        const resp = await fetch("/.netlify/functions/scrum", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(row)
-        });
+        const { error } = await supabase.from("scrum_updates").insert([{
+          date: row.date,
+          team_member: row.team_member,
+          department: row.department,
+          yesterday_work: row.yesterday_work,
+          today_plan: row.today_plan,
+          blockers: row.blockers,
+          remarks: row.remarks,
+          created_at: row.created_at
+        }]);
 
-        if (!resp.ok) {
-          console.error("POST /.netlify/functions/scrum failed", resp.status);
+        if (error) {
+          console.error("Supabase INSERT failed:", error);
           return { isOk: false };
         }
 
-        // reload after save
         return this.init(this._handler);
       }
     };
@@ -931,15 +941,15 @@
       }, 3000);
     }
 
-    document.addEventListener("DOMContentLoaded", initializeApp);
-
-    // openModal / closeModal helpers
     function openModal() {
       document.getElementById('update-modal').classList.remove('hidden');
     }
+
     function closeModal() {
       document.getElementById('update-modal').classList.add('hidden');
     }
+
+    document.addEventListener("DOMContentLoaded", initializeApp);
   </script>
 </body>
 </html>
