@@ -4,10 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Retail Team Scrum Portal</title>
+
+  <!-- Tailwind (ok for now; can optimize later) -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Supabase JS v2 (UMD) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- Supabase JS -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
   <style>
     body {
       box-sizing: border-box;
@@ -245,7 +250,7 @@
                           name="blockers"
                           rows="2"
                           placeholder="Any blockers or impediments?"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus-border-transparent resize-none"></textarea>
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
               </div>
 
               <div>
@@ -254,7 +259,7 @@
                           name="remarks"
                           rows="2"
                           placeholder="Additional notes or comments"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus-border-transparent resize-none"></textarea>
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"></textarea>
               </div>
 
               <div class="flex justify-end space-x-3 pt-4">
@@ -277,21 +282,14 @@
         </div>
       </div>
     </div>
-
   </div><!-- /app -->
 
   <script>
-    // ---- Supabase client ----
-    const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";      // TODO: replace
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";                // TODO: replace
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // --- CONFIG / STATE ---
+    // ---------- BASIC CONFIG ----------
     const defaultConfig = {
       portal_title: "Retail Team Scrum Portal",
       team_name: "Retail Team",
-      meeting_duration: "15"
+      meeting_duration: "15",
     };
 
     let currentData = [];
@@ -305,7 +303,7 @@
       "Maricel": { department: "E-commerce",   color: "#F59E0B" },
       "Kunal":   { department: "Logistics",    color: "#2563EB" },
       "Mehboob": { department: "Fulfillment",  color: "#8B5CF6" },
-      "Aaron":   { department: "Customer Exp", color: "#EF4444" }
+      "Aaron":   { department: "Customer Exp", color: "#EF4444" },
     };
 
     function esc(str) {
@@ -316,35 +314,44 @@
         .replace(/"/g, "&quot;");
     }
 
-    // --- dataSdk using Supabase ---
+    // ---------- SUPABASE CLIENT ----------
+    const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co"; // your Supabase project URL
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg"; // <-- IMPORTANT
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    // ---------- DATA SDK USING SUPABASE ----------
     window.dataSdk = {
       _handler: null,
 
       async init(handler) {
         this._handler = handler;
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from("scrum_updates")
-          .select("*")
+          .select("id, standup_date, team_member, department, yesterday_work, today_plan, blockers, remarks, status, created_at")
           .order("created_at", { ascending: false });
 
         if (error) {
-          console.error("Supabase GET failed:", error);
+          console.error("Supabase SELECT failed:", error);
           handler.onDataChanged([]);
           return { isOk: false };
         }
 
         const mapped = (data || []).map(r => ({
           id: r.id,
-          date: r.date,
+          date: r.standup_date,
           team_member: r.team_member,
           department: r.department,
           yesterday_work: r.yesterday_work,
           today_plan: r.today_plan,
           blockers: r.blockers,
           remarks: r.remarks,
-          status: "active",
-          created_at: r.created_at
+          status: r.status || "active",
+          created_at: r.created_at,
         }));
 
         handler.onDataChanged(mapped);
@@ -352,16 +359,22 @@
       },
 
       async create(row) {
-        const { error } = await supabase.from("scrum_updates").insert([{
-          date: row.date,
+        const payload = {
+          id: row.id,
+          standup_date: row.date,
           team_member: row.team_member,
           department: row.department,
           yesterday_work: row.yesterday_work,
           today_plan: row.today_plan,
           blockers: row.blockers,
           remarks: row.remarks,
-          created_at: row.created_at
-        }]);
+          status: row.status || "active",
+          created_at: row.created_at,
+        };
+
+        const { error } = await supabaseClient
+          .from("scrum_updates")
+          .insert(payload);
 
         if (error) {
           console.error("Supabase INSERT failed:", error);
@@ -369,17 +382,17 @@
         }
 
         return this.init(this._handler);
-      }
+      },
     };
 
     const dataHandler = {
       onDataChanged(data) {
         currentData = data;
         updateUI();
-      }
+      },
     };
 
-    // ---- INIT ----
+    // ---------- INIT ----------
     async function initializeApp() {
       try {
         const initResult = await window.dataSdk.init(dataHandler);
@@ -395,33 +408,32 @@
       }
     }
 
-    // ---- EVENT LISTENERS ----
+    // ---------- EVENT LISTENERS ----------
     function setupEventListeners() {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
       });
 
-      document.getElementById('add-update-btn').addEventListener('click', openModal);
-      document.querySelector('.add-update-trigger')?.addEventListener('click', openModal);
-      document.getElementById('close-modal').addEventListener('click', closeModal);
-      document.getElementById('cancel-btn').addEventListener('click', closeModal);
+      document.getElementById("add-update-btn").addEventListener("click", openModal);
+      document.querySelector(".add-update-trigger")?.addEventListener("click", openModal);
+      document.getElementById("close-modal").addEventListener("click", closeModal);
+      document.getElementById("cancel-btn").addEventListener("click", closeModal);
 
-      document.getElementById('update-form').addEventListener('submit', handleFormSubmit);
+      document.getElementById("update-form").addEventListener("submit", handleFormSubmit);
 
-      document.getElementById('start-scrum-btn').addEventListener('click', toggleTimer);
+      document.getElementById("start-scrum-btn").addEventListener("click", toggleTimer);
 
-      document.getElementById('filter-member').addEventListener('change', applyFilters);
-      document.getElementById('filter-department').addEventListener('change', applyFilters);
-      document.getElementById('filter-date').addEventListener('change', applyFilters);
+      document.getElementById("filter-member").addEventListener("change", applyFilters);
+      document.getElementById("filter-department").addEventListener("change", applyFilters);
+      document.getElementById("filter-date").addEventListener("change", applyFilters);
 
-      document.getElementById('summary-date').addEventListener('change', updateSummaryView);
+      document.getElementById("summary-date").addEventListener("change", updateSummaryView);
+      document.getElementById("export-btn").addEventListener("click", exportSummary);
 
-      document.getElementById('export-btn').addEventListener('click', exportSummary);
-
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('update-date').value = today;
-      document.getElementById('summary-date').value = today;
-      document.getElementById('filter-date').value = today;
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("update-date").value = today;
+      document.getElementById("summary-date").value = today;
+      document.getElementById("filter-date").value = today;
     }
 
     async function handleFormSubmit(e) {
@@ -432,27 +444,27 @@
         return;
       }
 
-      const saveBtn = document.getElementById('save-btn');
-      const saveText = document.getElementById('save-text');
-      const saveLoading = document.getElementById('save-loading');
+      const saveBtn = document.getElementById("save-btn");
+      const saveText = document.getElementById("save-text");
+      const saveLoading = document.getElementById("save-loading");
 
       saveBtn.disabled = true;
-      saveText.classList.add('hidden');
-      saveLoading.classList.remove('hidden');
+      saveText.classList.add("hidden");
+      saveLoading.classList.remove("hidden");
 
       try {
         const formData = new FormData(e.target);
         const updateData = {
           id: Date.now().toString(),
-          date: formData.get('date'),
-          team_member: formData.get('team_member'),
-          department: formData.get('department'),
-          yesterday_work: formData.get('yesterday_work') || '',
-          today_plan: formData.get('today_plan') || '',
-          blockers: formData.get('blockers') || '',
-          remarks: formData.get('remarks') || '',
-          status: 'active',
-          created_at: new Date().toISOString()
+          date: formData.get("date"),
+          team_member: formData.get("team_member"),
+          department: formData.get("department"),
+          yesterday_work: formData.get("yesterday_work") || "",
+          today_plan: formData.get("today_plan") || "",
+          blockers: formData.get("blockers") || "",
+          remarks: formData.get("remarks") || "",
+          status: "active",
+          created_at: new Date().toISOString(),
         };
 
         const result = await window.dataSdk.create(updateData);
@@ -468,12 +480,12 @@
         showToast("❌ An error occurred while saving.", "error");
       } finally {
         saveBtn.disabled = false;
-        saveText.classList.remove('hidden');
-        saveLoading.classList.add('hidden');
+        saveText.classList.remove("hidden");
+        saveLoading.classList.add("hidden");
       }
     }
 
-    // ---- UI RENDER ----
+    // ---------- UI FUNCTIONS (dashboard / summary / manager) ----------
     function updateUI() {
       updateDashboard();
       updateManagerPanel();
@@ -481,35 +493,42 @@
     }
 
     function updateDashboard() {
-      const container = document.getElementById('team-updates');
-      const emptyState = document.getElementById('empty-state');
-      const today = new Date().toISOString().split('T')[0];
+      const container = document.getElementById("team-updates");
+      const emptyState = document.getElementById("empty-state");
+      const today = new Date().toISOString().split("T")[0];
 
       const todayUpdates = currentData.filter(update => update.date === today);
 
       if (todayUpdates.length === 0) {
-        container.innerHTML = '';
-        emptyState.classList.remove('hidden');
+        container.innerHTML = "";
+        emptyState.classList.remove("hidden");
         return;
       }
 
-      emptyState.classList.add('hidden');
+      emptyState.classList.add("hidden");
 
       const memberUpdates = {};
       todayUpdates.forEach(update => {
-        if (!memberUpdates[update.team_member] ||
-            new Date(update.created_at) > new Date(memberUpdates[update.team_member].created_at)) {
+        if (
+          !memberUpdates[update.team_member] ||
+          new Date(update.created_at) > new Date(memberUpdates[update.team_member].created_at)
+        ) {
           memberUpdates[update.team_member] = update;
         }
       });
 
-      container.innerHTML = Object.values(memberUpdates).map(createUpdateCard).join('');
+      container.innerHTML = Object.values(memberUpdates)
+        .map(createUpdateCard)
+        .join("");
     }
 
     function createUpdateCard(update) {
-      const member = teamMembers[update.team_member] || { department: update.department, color: '#6B7280' };
+      const member = teamMembers[update.team_member] || {
+        department: update.department,
+        color: "#6B7280",
+      };
       const hasBlockers = update.blockers && update.blockers.trim().length > 0;
-      const initials = update.team_member.split(' ').map(n => n[0]).join('');
+      const initials = update.team_member.split(" ").map(n => n[0]).join("");
 
       return `
         <div class="scrum-card bg-white rounded-lg shadow-sm p-6 ${hasBlockers ? "blocker-urgent" : ""}">
@@ -525,7 +544,10 @@
               </span>
             </div>
             <div class="text-xs text-gray-500">
-              ${new Date(update.created_at).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}
+              ${new Date(update.created_at).toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </div>
           </div>
 
@@ -544,31 +566,39 @@
               </p>
             </div>
 
-            ${hasBlockers ? `
+            ${
+              hasBlockers
+                ? `
               <div>
                 <h4 class="text-sm font-medium text-red-700 mb-2">⚠️ Blockers</h4>
                 <p class="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
                   ${esc(update.blockers)}
                 </p>
               </div>
-            ` : ""}
+            `
+                : ""
+            }
 
-            ${update.remarks ? `
+            ${
+              update.remarks
+                ? `
               <div>
                 <h4 class="text-sm font-medium text-gray-700 mb-2">💬 Remarks</h4>
                 <p class="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
                   ${esc(update.remarks)}
                 </p>
               </div>
-            ` : ""}
+            `
+                : ""
+            }
           </div>
         </div>
       `;
     }
 
     function updateSummaryView() {
-      const selectedDate = document.getElementById('summary-date').value;
-      const container = document.getElementById('summary-content');
+      const selectedDate = document.getElementById("summary-date").value;
+      const container = document.getElementById("summary-content");
       if (!selectedDate) return;
 
       const dayUpdates = currentData.filter(update => update.date === selectedDate);
@@ -599,19 +629,23 @@
           <h3 class="text-lg font-semibold mb-4">
             Standup Summary - ${
               new Date(selectedDate).toLocaleDateString("en-US", {
-                weekday:"long", year:"numeric", month:"long", day:"numeric"
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })
             }
           </h3>
-          ${
-            Object.entries(memberGroups).map(([member, updates]) => {
+          ${Object.entries(memberGroups)
+            .map(([member, updates]) => {
               const latestUpdate = updates.sort(
-                (a,b) => new Date(b.created_at) - new Date(a.created_at)
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
               )[0];
-              const memberInfo = teamMembers[member] || {
-                department: latestUpdate.department,
-                color: "#6B7280"
-              };
+              const memberInfo =
+                teamMembers[member] || {
+                  department: latestUpdate.department,
+                  color: "#6B7280",
+                };
 
               return `
                 <div class="border-l-4 pl-4 mb-6" style="border-color:${memberInfo.color};">
@@ -626,30 +660,40 @@
                   <div class="grid md:grid-cols-3 gap-4 text-sm">
                     <div>
                       <strong class="text-gray-700">Yesterday:</strong>
-                      <p class="text-gray-600 mt-1">${esc(latestUpdate.yesterday_work || "No updates")}</p>
+                      <p class="text-gray-600 mt-1">
+                        ${esc(latestUpdate.yesterday_work || "No updates")}
+                      </p>
                     </div>
                     <div>
                       <strong class="text-gray-700">Today:</strong>
-                      <p class="text-gray-600 mt-1">${esc(latestUpdate.today_plan || "No plans")}</p>
+                      <p class="text-gray-600 mt-1">
+                        ${esc(latestUpdate.today_plan || "No plans")}
+                      </p>
                     </div>
                     <div>
                       <strong class="text-gray-700">Blockers:</strong>
-                      <p class="text-gray-600 mt-1 ${latestUpdate.blockers ? "text-red-600" : ""}">
+                      <p class="text-gray-600 mt-1 ${
+                        latestUpdate.blockers ? "text-red-600" : ""
+                      }">
                         ${esc(latestUpdate.blockers || "None")}
                       </p>
                     </div>
                   </div>
 
-                  ${latestUpdate.remarks ? `
+                  ${
+                    latestUpdate.remarks
+                      ? `
                     <div class="mt-2 text-sm">
                       <strong class="text-gray-700">Remarks:</strong>
                       <p class="text-gray-600 mt-1">${esc(latestUpdate.remarks)}</p>
                     </div>
-                  ` : ""}
+                  `
+                      : ""
+                  }
                 </div>
               `;
-            }).join("")
-          }
+            })
+            .join("")}
         </div>
       `;
     }
@@ -660,18 +704,18 @@
     }
 
     function populateFilterDropdowns() {
-      const memberSelect = document.getElementById('filter-member');
+      const memberSelect = document.getElementById("filter-member");
       const currentMembers = [...new Set(currentData.map(update => update.team_member))];
 
       memberSelect.innerHTML =
         '<option value="">All Team Members</option>' +
-        currentMembers.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+        currentMembers.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
     }
 
     function applyFilters() {
-      const memberFilter = document.getElementById('filter-member').value;
-      const departmentFilter = document.getElementById('filter-department').value;
-      const dateFilter = document.getElementById('filter-date').value;
+      const memberFilter = document.getElementById("filter-member").value;
+      const departmentFilter = document.getElementById("filter-department").value;
+      const dateFilter = document.getElementById("filter-date").value;
 
       let filteredData = currentData;
 
@@ -689,8 +733,8 @@
     }
 
     function displayManagerContent(data) {
-      const container = document.getElementById('manager-content');
-      const blockerArea = document.getElementById('blocker-escalation-area');
+      const container = document.getElementById("manager-content");
+      const blockerArea = document.getElementById("blocker-escalation-area");
 
       if (data.length === 0) {
         blockerArea.innerHTML = "";
@@ -715,15 +759,17 @@
           <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div class="text-red-700 font-semibold mb-2">🚨 Blockers to clear:</div>
             <ul class="text-sm text-red-700 list-disc pl-5 space-y-1">
-              ${
-                openBlockers.map(b => `
-                  <li>
-                    <span class="font-medium">${esc(b.team_member)}</span>
-                    (${esc(b.department)}):
-                    ${esc(b.blockers)}
-                  </li>
-                `).join("")
-              }
+              ${openBlockers
+                .map(
+                  b => `
+                <li>
+                  <span class="font-medium">${esc(b.team_member)}</span>
+                  (${esc(b.department)}):
+                  ${esc(b.blockers)}
+                </li>
+              `
+                )
+                .join("")}
             </ul>
           </div>
         `;
@@ -748,14 +794,19 @@
         </div>
 
         <div class="space-y-4">
-          ${
-            data.map(update => {
-              const memberInfo = teamMembers[update.team_member] ||
-                { department: update.department, color: "#6B7280" };
+          ${data
+            .map(update => {
+              const memberInfo =
+                teamMembers[update.team_member] || {
+                  department: update.department,
+                  color: "#6B7280",
+                };
               const hasBlockers = update.blockers && update.blockers.trim();
 
               return `
-                <div class="bg-white rounded-lg shadow-sm p-4 ${hasBlockers ? "border-l-4 border-red-400" : ""}">
+                <div class="bg-white rounded-lg shadow-sm p-4 ${
+                  hasBlockers ? "border-l-4 border-red-400" : ""
+                }">
                   <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center">
                       <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
@@ -769,37 +820,49 @@
                         </p>
                       </div>
                     </div>
-                    ${hasBlockers ? '<span class="text-red-500 text-sm font-medium">⚠️ Has Blockers</span>' : ""}
+                    ${
+                      hasBlockers
+                        ? '<span class="text-red-500 text-sm font-medium">⚠️ Has Blockers</span>'
+                        : ""
+                    }
                   </div>
 
                   <div class="grid md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <strong class="text-gray-700">Yesterday:</strong>
-                      <p class="text-gray-600 mt-1">${esc(update.yesterday_work || "No updates")}</p>
+                      <p class="text-gray-600 mt-1">
+                        ${esc(update.yesterday_work || "No updates")}
+                      </p>
                     </div>
                     <div>
                       <strong class="text-gray-700">Today:</strong>
-                      <p class="text-gray-600 mt-1">${esc(update.today_plan || "No plans")}</p>
+                      <p class="text-gray-600 mt-1">
+                        ${esc(update.today_plan || "No plans")}
+                      </p>
                     </div>
                   </div>
 
-                  ${hasBlockers ? `
+                  ${
+                    hasBlockers
+                      ? `
                     <div class="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
                       <strong class="text-red-700">Blockers:</strong>
                       <p class="text-red-600 mt-1">${esc(update.blockers)}</p>
                     </div>
-                  ` : ""}
+                  `
+                      : ""
+                  }
                 </div>
               `;
-            }).join("")
-          }
+            })
+            .join("")}
         </div>
       `;
     }
 
-    // ---- EXPORT CSV ----
+    // ---------- MISC HELPERS ----------
     function exportSummary() {
-      const selectedDate = document.getElementById('summary-date').value;
+      const selectedDate = document.getElementById("summary-date").value;
       if (!selectedDate) {
         showToast("⚠️ Please select a date to export", "error");
         return;
@@ -817,19 +880,21 @@
         "Yesterday Work",
         "Today Plan",
         "Blockers",
-        "Remarks"
+        "Remarks",
       ];
 
       const csvContent = [
         headers.join(","),
-        ...dayUpdates.map(update => [
-          `"${update.team_member}"`,
-          `"${update.department}"`,
-          `"${(update.yesterday_work || "").replace(/"/g,'""')}"`,
-          `"${(update.today_plan || "").replace(/"/g,'""')}"`,
-          `"${(update.blockers || "").replace(/"/g,'""')}"`,
-          `"${(update.remarks || "").replace(/"/g,'""')}"`
-        ].join(","))
+        ...dayUpdates.map(update =>
+          [
+            `"${update.team_member}"`,
+            `"${update.department}"`,
+            `"${(update.yesterday_work || "").replace(/"/g, '""')}"`,
+            `"${(update.today_plan || "").replace(/"/g, '""')}"`,
+            `"${(update.blockers || "").replace(/"/g, '""')}"`,
+            `"${(update.remarks || "").replace(/"/g, '""')}"`,
+          ].join(",")
+        ),
       ].join("\n");
 
       const blob = new Blob([csvContent], { type: "text/csv" });
@@ -845,20 +910,19 @@
       showToast("📄 Summary exported successfully!", "success");
     }
 
-    // ---- OTHER HELPERS ----
     function updateCurrentDate() {
       const now = new Date();
-      const options = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
-      document.getElementById('current-date').textContent =
-        now.toLocaleDateString('en-US', options);
+      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+      document.getElementById("current-date").textContent =
+        now.toLocaleDateString("en-US", options);
     }
 
     function toggleTimer() {
-      const btn = document.getElementById('start-scrum-btn');
-      const timerDisplay = document.getElementById('timer-display');
+      const btn = document.getElementById("start-scrum-btn");
+      const timerDisplay = document.getElementById("timer-display");
 
       if (!isTimerRunning) {
-        timerSeconds = parseInt(defaultConfig.meeting_duration) * 60;
+        timerSeconds = parseInt(defaultConfig.meeting_duration, 10) * 60;
         isTimerRunning = true;
         btn.textContent = "⏹️ Stop Scrum";
         btn.classList.add("timer-active");
@@ -887,7 +951,10 @@
     function updateTimerDisplay() {
       const minutes = Math.floor(timerSeconds / 60);
       const seconds = timerSeconds % 60;
-      const display = `${minutes.toString().padStart(2,"0")}:${seconds.toString().padStart(2,"0")}`;
+      const display =
+        `${minutes.toString().padStart(2, "0")}:${seconds
+          .toString()
+          .padStart(2, "0")}`;
       document.getElementById("timer-text").textContent = display;
     }
 
@@ -915,14 +982,15 @@
       }
     }
 
-    function showToast(message, type="info") {
+    function showToast(message, type = "info") {
       const toast = document.createElement("div");
-      toast.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
+      toast.className =
+        "fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform translate-x-full";
 
       const colors = {
         success: "bg-green-500",
-        error:   "bg-red-500",
-        info:    "bg-blue-500"
+        error: "bg-red-500",
+        info: "bg-blue-500",
       };
 
       toast.classList.add(colors[type] || colors.info);
@@ -942,11 +1010,10 @@
     }
 
     function openModal() {
-      document.getElementById('update-modal').classList.remove('hidden');
+      document.getElementById("update-modal").classList.remove("hidden");
     }
-
     function closeModal() {
-      document.getElementById('update-modal').classList.add('hidden');
+      document.getElementById("update-modal").classList.add("hidden");
     }
 
     document.addEventListener("DOMContentLoaded", initializeApp);
