@@ -40,8 +40,7 @@
 
     /* HEADER */
     header.app-header {
-      background:
-        linear-gradient(to right, #ffffff, #faf5ff);
+      background: linear-gradient(to right, #ffffff, #faf5ff);
       border-bottom: 1px solid var(--brand-border-subtle);
       position: sticky;
       top: 0;
@@ -149,7 +148,7 @@
       box-shadow: 0 0 16px rgba(34,197,94,0.35);
     }
 
-    /* Utility overrides for readability */
+    /* Readability helpers */
     .text-label {
       font-size: 0.8rem;
       color: var(--brand-text-soft);
@@ -278,21 +277,43 @@
       <section id="summary-tab" class="tab-content hidden">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
           <div>
-            <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Daily summary</h2>
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900">Summary & Export</h2>
             <p class="text-sm text-slate-500">
-              Roll-up by team member for a selected date.
+              View a single-day snapshot or export multi-day reports for leadership.
             </p>
           </div>
-          <div class="flex items-center gap-2">
-            <input type="date"
-                   id="summary-date"
-                   class="px-3 py-2 text-sm rounded-full bg-white border border-slate-300
-                          text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400" />
-            <button id="export-btn"
-                    class="px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400
-                           text-xs sm:text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm">
-              📄 Export CSV
-            </button>
+          <div class="flex flex-col gap-2 items-start md:items-end">
+            <!-- Single day controls -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <input type="date"
+                     id="summary-date"
+                     class="px-3 py-2 text-sm rounded-full bg-white border border-slate-300
+                            text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400" />
+              <button id="export-btn"
+                      class="px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400
+                             text-xs sm:text-sm font-semibold text-white flex items-center gap-1.5 shadow-sm">
+                📄 Export day CSV
+              </button>
+            </div>
+            <!-- Range controls -->
+            <div class="flex items-center gap-2 flex-wrap text-[0.75rem] text-slate-500">
+              <span class="hidden sm:inline">Date range export:</span>
+              <span class="sm:hidden">Range:</span>
+              <input type="date"
+                     id="export-from"
+                     class="px-3 py-1.5 text-sm rounded-full bg-white border border-slate-300
+                            text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <span class="text-slate-400">to</span>
+              <input type="date"
+                     id="export-to"
+                     class="px-3 py-1.5 text-sm rounded-full bg-white border border-slate-300
+                            text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <button id="export-range-btn"
+                      class="px-4 py-1.5 rounded-full bg-violet-500 hover:bg-violet-400
+                             text-[0.7rem] font-semibold text-white flex items-center gap-1.5 shadow-sm">
+                📄 Export range CSV
+              </button>
+            </div>
           </div>
         </div>
         <div id="summary-content" class="space-y-4"></div>
@@ -597,9 +618,19 @@
       setupStaticListeners();
 
       const today = new Date().toISOString().split("T")[0];
+      const sevenDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
+        .toISOString().split("T")[0];
+
       document.getElementById("update-date").value = today;
       document.getElementById("summary-date").value = today;
       document.getElementById("filter-date").value = today;
+
+      const fromInput = document.getElementById("export-from");
+      const toInput = document.getElementById("export-to");
+      if (fromInput && toInput) {
+        fromInput.value = sevenDaysAgo;
+        toInput.value = today;
+      }
 
       const initResult = await window.dataSdk.init(dataHandler);
       if (!initResult.isOk) {
@@ -628,7 +659,12 @@
       document.getElementById("filter-date").addEventListener("change", applyFilters);
 
       document.getElementById("summary-date").addEventListener("change", updateSummaryView);
-      document.getElementById("export-btn").addEventListener("click", exportSummary);
+      document.getElementById("export-btn").addEventListener("click", exportSummaryDay);
+
+      const exportRangeBtn = document.getElementById("export-range-btn");
+      if (exportRangeBtn) {
+        exportRangeBtn.addEventListener("click", exportSummaryRange);
+      }
     }
 
     async function handleFormSubmit(e) {
@@ -1052,7 +1088,8 @@
       });
     }
 
-    function exportSummary() {
+    // EXPORT: single day
+    function exportSummaryDay() {
       const selectedDate = document.getElementById("summary-date").value;
       if (!selectedDate) {
         showToast("Pick a date first.", "error");
@@ -1065,6 +1102,39 @@
         return;
       }
 
+      exportRowsToCsv(rows, `scrum-summary-${selectedDate}.csv`);
+      showToast("Day summary exported.", "success");
+    }
+
+    // EXPORT: date range
+    function exportSummaryRange() {
+      const from = document.getElementById("export-from").value;
+      const to = document.getElementById("export-to").value;
+
+      if (!from || !to) {
+        showToast("Select both From and To dates.", "error");
+        return;
+      }
+
+      if (from > to) {
+        showToast("From date cannot be after To date.", "error");
+        return;
+      }
+
+      const rows = currentData.filter(u =>
+        u.date && u.date >= from && u.date <= to
+      );
+
+      if (!rows.length) {
+        showToast("No data in selected range.", "error");
+        return;
+      }
+
+      exportRowsToCsv(rows, `scrum-summary-${from}_to_${to}.csv`);
+      showToast("Range summary exported.", "success");
+    }
+
+    function exportRowsToCsv(rows, filename) {
       const headers = [
         "date",
         "team_member",
@@ -1092,13 +1162,11 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `scrum-summary-${selectedDate}.csv`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-
-      showToast("Summary exported.", "success");
     }
 
     function updateCurrentDate() {
