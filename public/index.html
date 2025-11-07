@@ -139,6 +139,10 @@
     .text-small {
       font-size: 0.8rem;
     }
+
+    .rich-text ul { list-style: disc; margin-left: 1.25rem; }
+    .rich-text ol { list-style: decimal; margin-left: 1.25rem; }
+    .rich-text li { margin: 0.1rem 0; }
   </style>
 </head>
 <body class="min-h-screen">
@@ -248,7 +252,7 @@
           <div>
             <h2 class="text-lg md:text-xl font-semibold text-slate-900">Daily summary</h2>
             <p class="text-small text-slate-500">
-              Pick a date to see who did what. Click entries in other views for full details.
+              Pick a date to see who did what. Lists created with <code>-</code> or <code>1.</code> are rendered as bullets.
             </p>
           </div>
 
@@ -336,7 +340,7 @@
               New standup update
             </h3>
             <p class="text-small text-slate-500">
-              Capture yesterday, today, and blockers in one quick form.
+              Use separate lines. Start lines with <code>-</code> or <code>1.</code> for bullet / numbered lists.
             </p>
           </div>
           <button id="close-modal"
@@ -387,16 +391,18 @@
 
           <div>
             <label class="block mb-1 text-label">Yesterday's work</label>
-            <textarea id="yesterday-work" name="yesterday_work" rows="2"
-                      placeholder="What did you complete?"
+            <textarea id="yesterday-work" name="yesterday_work" rows="3"
+                      placeholder="- Completed listing upload
+- Synced with suppliers"
                       class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
                              text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
           </div>
 
           <div>
             <label class="block mb-1 text-label">Today's plan</label>
-            <textarea id="today-plan" name="today_plan" rows="2"
-                      placeholder="What will you work on?"
+            <textarea id="today-plan" name="today_plan" rows="3"
+                      placeholder="- Push live campaign
+- Review stock levels"
                       class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
                              text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
           </div>
@@ -404,7 +410,8 @@
           <div>
             <label class="block mb-1 text-label">Blockers</label>
             <textarea id="blockers" name="blockers" rows="2"
-                      placeholder="Any risks, delays, dependencies?"
+                      placeholder="- Waiting on pricing approval
+- API issue with marketplace"
                       class="w-full px-3 py-2 rounded-xl bg-white border border-rose-100
                              text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-rose-400"></textarea>
           </div>
@@ -412,7 +419,8 @@
           <div>
             <label class="block mb-1 text-label">Remarks / notes</label>
             <textarea id="remarks" name="remarks" rows="2"
-                      placeholder="Optional context for leads"
+                      placeholder="- Urgent items for leadership
+- Dependencies to track"
                       class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
                              text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
           </div>
@@ -476,19 +484,19 @@
         <div class="space-y-4 text-small">
           <div>
             <div class="text-label mb-1">Yesterday's work</div>
-            <div id="detail-yesterday" class="text-slate-800 bg-slate-50 rounded-xl p-3 min-h-[44px]"></div>
+            <div id="detail-yesterday" class="rich-text text-slate-800 bg-slate-50 rounded-xl p-3 min-h-[44px]"></div>
           </div>
           <div>
             <div class="text-label mb-1">Today's plan</div>
-            <div id="detail-today" class="text-slate-800 bg-slate-50 rounded-xl p-3 min-h-[44px]"></div>
+            <div id="detail-today" class="rich-text text-slate-800 bg-slate-50 rounded-xl p-3 min-h-[44px]"></div>
           </div>
           <div>
             <div class="text-label mb-1">Blockers</div>
-            <div id="detail-blockers" class="bg-rose-50 text-rose-700 rounded-xl p-3 min-h-[40px]"></div>
+            <div id="detail-blockers" class="rich-text bg-rose-50 text-rose-700 rounded-xl p-3 min-h-[40px]"></div>
           </div>
           <div>
             <div class="text-label mb-1">Remarks / notes</div>
-            <div id="detail-remarks" class="bg-violet-50 text-violet-700 rounded-xl p-3 min-h-[40px]"></div>
+            <div id="detail-remarks" class="rich-text bg-violet-50 text-violet-700 rounded-xl p-3 min-h-[40px]"></div>
           </div>
         </div>
       </div>
@@ -535,6 +543,31 @@
         .replace(/"/g, "&quot;");
     }
 
+    function renderRichText(text) {
+      const value = (text || "").trim();
+      if (!value) return '<span class="text-slate-400">—</span>';
+
+      const rawLines = value.split(/\r?\n/).map(l => l.trim());
+      const lines = rawLines.filter(l => l.length);
+      if (!lines.length) return esc(value);
+
+      const allBullet = lines.every(l => /^[-*•]\s+/.test(l));
+      const allNumber = lines.every(l => /^\d+\.\s+/.test(l));
+
+      if (allBullet) {
+        const items = lines.map(l => esc(l.replace(/^[-*•]\s+/, "")));
+        return `<ul class="space-y-0.5">${items.map(i => `<li>${i}</li>`).join("")}</ul>`;
+      }
+
+      if (allNumber) {
+        const items = lines.map(l => esc(l.replace(/^\d+\.\s+/, "")));
+        return `<ol class="space-y-0.5">${items.map(i => `<li>${i}</li>`).join("")}</ol>`;
+      }
+
+      // mixed or plain: keep line breaks
+      return esc(value).replace(/\n/g, "<br>");
+    }
+
     function toLocalYMD(dateLike) {
       const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
       if (isNaN(d)) return null;
@@ -546,7 +579,11 @@
 
     function recordMatchesDay(record, ymd) {
       if (!ymd) return false;
-      if (record.date) return record.date.startsWith(ymd);
+      if (record.date) {
+        // handle date or timestamp stored in date field
+        const d = record.date.split("T")[0];
+        return d === ymd;
+      }
       if (record.created_at) return toLocalYMD(record.created_at) === ymd;
       return false;
     }
@@ -698,7 +735,7 @@
       document.getElementById("summary-date").addEventListener("change", updateSummaryView);
       document.getElementById("export-btn").addEventListener("click", exportSummary);
 
-      // Detail modal close
+      // Detail modal close logic
       document.getElementById("close-detail-modal").addEventListener("click", closeDetailModal);
       document.getElementById("detail-modal").addEventListener("click", (e) => {
         if (e.target.id === "detail-modal") closeDetailModal();
@@ -805,7 +842,7 @@
         .map(u => createUpdateCard(u))
         .join("");
 
-      // Enlarge + Edit handlers
+      // card -> detail
       container.querySelectorAll("[data-view-id]").forEach(card => {
         card.addEventListener("click", () => {
           const id = card.dataset.viewId;
@@ -813,6 +850,7 @@
           if (row) openDetailModal(row);
         });
       });
+      // edit buttons (no detail trigger)
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
@@ -848,9 +886,10 @@
                   <h3 class="text-sm font-semibold text-slate-900">
                     ${esc(update.team_member || "Unassigned")}
                   </h3>
-                  ${hasBlockers
-                    ? `<span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[0.7rem]">⚠ Blocker</span>`
-                    : `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[0.7rem]">✓ Clear</span>`
+                  ${
+                    hasBlockers
+                      ? `<span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[0.7rem]">⚠ Blocker</span>`
+                      : `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[0.7rem]">✓ Clear</span>`
                   }
                 </div>
                 <span class="department-pill">
@@ -870,35 +909,42 @@
           <div class="space-y-2 text-small">
             <div>
               <p class="text-label mb-0.5">Yesterday</p>
-              <p class="text-slate-800">
-                ${esc(update.yesterday_work || "No update provided.")}
-              </p>
+              <div class="rich-text text-slate-800">
+                ${renderRichText(update.yesterday_work || "No update provided.")}
+              </div>
             </div>
             <div>
               <p class="text-label mb-0.5">Today</p>
-              <p class="text-slate-800">
-                ${esc(update.today_plan || "No plan specified.")}
-              </p>
+              <div class="rich-text text-slate-800">
+                ${renderRichText(update.today_plan || "No plan specified.")}
+              </div>
             </div>
             <div>
               <p class="text-label mb-0.5">Blockers</p>
-              <p class="${hasBlockers ? "text-rose-600" : "text-slate-500"}">
-                ${esc(update.blockers || "None")}
-              </p>
+              <div class="rich-text ${hasBlockers ? "text-rose-600" : "text-slate-500"}">
+                ${renderRichText(update.blockers || "None")}
+              </div>
             </div>
-            ${update.remarks ? `
-              <div>
-                <p class="text-label mb-0.5">Notes</p>
-                <p class="text-violet-700">${esc(update.remarks)}</p>
-              </div>` : ""}
+            ${
+              update.remarks
+                ? `<div>
+                    <p class="text-label mb-0.5">Notes</p>
+                    <div class="rich-text text-violet-700">
+                      ${renderRichText(update.remarks)}
+                    </div>
+                   </div>`
+                : ""
+            }
           </div>
 
           <div class="flex justify-between items-center text-[0.7rem] text-slate-500 pt-1">
             <span>${esc(dateLabel)}</span>
             <span>
-              ${update.created_at
-                ? new Date(update.created_at).toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"})
-                : ""}
+              ${
+                update.created_at
+                  ? new Date(update.created_at).toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"})
+                  : ""
+              }
             </span>
           </div>
         </article>
@@ -960,27 +1006,30 @@
                   <div class="grid md:grid-cols-3 gap-2 text-small">
                     <div>
                       <div class="text-label">Yesterday</div>
-                      <div class="text-slate-800">
-                        ${esc(latest.yesterday_work || "No update")}
+                      <div class="rich-text text-slate-800">
+                        ${renderRichText(latest.yesterday_work || "No update")}
                       </div>
                     </div>
                     <div>
                       <div class="text-label">Today</div>
-                      <div class="text-slate-800">
-                        ${esc(latest.today_plan || "No plan")}
+                      <div class="rich-text text-slate-800">
+                        ${renderRichText(latest.today_plan || "No plan")}
                       </div>
                     </div>
                     <div>
                       <div class="text-label">Blockers</div>
-                      <div class="${latest.blockers ? "text-rose-600" : "text-slate-500"}">
-                        ${esc(latest.blockers || "None")}
+                      <div class="rich-text ${latest.blockers ? "text-rose-600" : "text-slate-500"}">
+                        ${renderRichText(latest.blockers || "None")}
                       </div>
                     </div>
                   </div>
-                  ${latest.remarks ? `
-                    <div class="text-[0.75rem] text-violet-700">
-                      Notes: ${esc(latest.remarks)}
-                    </div>` : ""}
+                  ${
+                    latest.remarks
+                      ? `<div class="text-[0.75rem] text-violet-700 rich-text">
+                           Notes: ${renderRichText(latest.remarks)}
+                         </div>`
+                      : ""
+                  }
                 </div>
               `;
             }).join("")
@@ -1115,23 +1164,29 @@
                   <div class="grid md:grid-cols-2 gap-1.5">
                     <div>
                       <span class="text-label">Yesterday:</span>
-                      <span class="text-slate-800"> ${esc(u.yesterday_work || "—")} </span>
+                      <div class="rich-text text-slate-800">
+                        ${renderRichText(u.yesterday_work || "—")}
+                      </div>
                     </div>
                     <div>
                       <span class="text-label">Today:</span>
-                      <span class="text-slate-800"> ${esc(u.today_plan || "—")} </span>
+                      <div class="rich-text text-slate-800">
+                        ${renderRichText(u.today_plan || "—")}
+                      </div>
                     </div>
                   </div>
                   ${
                     hasBlockers ? `
-                      <div class="text-rose-600">
-                        <span class="font-medium">Blocker:</span> ${esc(u.blockers)}
+                      <div class="rich-text text-rose-600">
+                        <span class="font-medium">Blocker:</span>
+                        ${renderRichText(u.blockers)}
                       </div>` : ""
                   }
                   ${
                     u.remarks ? `
-                      <div class="text-violet-700">
-                        <span class="font-medium">Notes:</span> ${esc(u.remarks)}
+                      <div class="rich-text text-violet-700">
+                        <span class="font-medium">Notes:</span>
+                        ${renderRichText(u.remarks)}
                       </div>` : ""
                   }
                 </div>
@@ -1141,7 +1196,7 @@
         </div>
       `;
 
-      // Enlarge + Edit handlers
+      // cards -> detail
       container.querySelectorAll("[data-view-id]").forEach(card => {
         card.addEventListener("click", () => {
           const id = card.dataset.viewId;
@@ -1149,6 +1204,7 @@
           if (row) openDetailModal(row);
         });
       });
+      // edit without opening detail
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
@@ -1174,7 +1230,6 @@
         : "";
       const hasBlockers = !!(update.blockers && update.blockers.trim());
 
-      // Avatar
       const avatar = document.getElementById("detail-avatar");
       avatar.textContent = initials;
       avatar.style.background = `linear-gradient(135deg, ${memberInfo.color}, #7c3aed)`;
@@ -1204,14 +1259,14 @@
           "px-2 py-0.5 rounded-full text-[0.7rem] font-medium bg-emerald-50 text-emerald-600 border border-emerald-200";
       }
 
-      document.getElementById("detail-yesterday").textContent =
-        update.yesterday_work || "No update provided.";
-      document.getElementById("detail-today").textContent =
-        update.today_plan || "No plan provided.";
-      document.getElementById("detail-blockers").textContent =
-        update.blockers || "No blockers reported.";
-      document.getElementById("detail-remarks").textContent =
-        update.remarks || "No additional remarks.";
+      document.getElementById("detail-yesterday").innerHTML =
+        renderRichText(update.yesterday_work || "No update provided.");
+      document.getElementById("detail-today").innerHTML =
+        renderRichText(update.today_plan || "No plan provided.");
+      document.getElementById("detail-blockers").innerHTML =
+        renderRichText(update.blockers || "No blockers reported.");
+      document.getElementById("detail-remarks").innerHTML =
+        renderRichText(update.remarks || "No additional remarks.");
 
       document.getElementById("detail-modal").classList.remove("hidden");
     }
@@ -1361,7 +1416,7 @@
       }, 2600);
     }
 
-    // ================== MODALS OPEN/CLOSE ==================
+    // ================== MODAL HELPERS ==================
     function openModal(existing) {
       const modal = document.getElementById("update-modal");
       const title = document.getElementById("modal-title");
@@ -1375,7 +1430,7 @@
         saveText.textContent = "Save changes";
 
         document.getElementById("update-date").value =
-          existing.date || toLocalYMD(existing.created_at) || "";
+          existing.date?.split("T")[0] || toLocalYMD(existing.created_at) || "";
         document.getElementById("team-member").value = existing.team_member || "";
         document.getElementById("department").value = existing.department || "";
         document.getElementById("yesterday-work").value = existing.yesterday_work || "";
