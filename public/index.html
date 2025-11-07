@@ -8,15 +8,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      /* ClickUp-style light palette */
       --brand-bg: #f5f5fb;
       --brand-surface: #ffffff;
       --brand-border-subtle: #e5e7eb;
       --brand-text-main: #111827;
       --brand-muted: #6b7280;
-      --brand-accent: #7c3aed;       /* purple */
-      --brand-accent-2: #22c55e;     /* green */
-      --brand-accent-3: #06b6d4;     /* teal */
+      --brand-accent: #7c3aed;
+      --brand-accent-2: #22c55e;
+      --brand-accent-3: #06b6d4;
       --brand-accent-soft: rgba(124, 58, 237, 0.06);
       --radius-xl: 22px;
     }
@@ -50,6 +49,7 @@
         radial-gradient(circle at top left, var(--brand-accent-soft), transparent),
         var(--brand-surface);
       font-size: 0.9rem;
+      cursor: pointer;
     }
 
     .scrum-card:hover {
@@ -220,7 +220,7 @@
           <div>
             <h2 class="text-lg md:text-xl font-semibold text-slate-900">Today's standup</h2>
             <p class="text-small text-slate-500">
-              Latest update per person for today. Click “Edit” to adjust entries.
+              Latest update per person for today. Click a card to view full details.
             </p>
           </div>
         </div>
@@ -248,7 +248,7 @@
           <div>
             <h2 class="text-lg md:text-xl font-semibold text-slate-900">Daily summary</h2>
             <p class="text-small text-slate-500">
-              Pick a date or range to see who did what. Great for leadership recap.
+              Pick a date to see who did what. Click entries in other views for full details.
             </p>
           </div>
 
@@ -279,7 +279,7 @@
           <div>
             <h2 class="text-lg md:text-xl font-semibold text-slate-900">Manager view</h2>
             <p class="text-small text-slate-500">
-              Filter by member, department or date. Quickly see coverage and blockers.
+              Filter by member, department or date. Click a row to enlarge the record.
             </p>
           </div>
         </div>
@@ -440,14 +440,65 @@
         </form>
       </div>
     </div>
+
+    <!-- DETAIL (ENLARGED RECORD) MODAL -->
+    <div id="detail-modal"
+         class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center px-3">
+      <div class="glass max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div class="flex items-center gap-3">
+            <div id="detail-avatar" class="avatar"></div>
+            <div>
+              <h3 id="detail-name" class="text-lg font-semibold text-slate-900"></h3>
+              <div class="flex flex-wrap items-center gap-2 mt-1">
+                <span id="detail-department" class="department-pill"></span>
+                <span id="detail-date" class="text-[0.75rem] text-slate-500"></span>
+                <span id="detail-created" class="text-[0.7rem] text-slate-400"></span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span id="detail-status-pill"
+                  class="px-2 py-0.5 rounded-full text-[0.7rem] font-medium"></span>
+            <button id="detail-edit-btn"
+                    class="px-3 py-1.5 rounded-full bg-violet-50 text-violet-600 text-[0.75rem]
+                           hover:bg-violet-100 flex items-center gap-1">
+              ✏ Edit this
+            </button>
+            <button id="close-detail-modal"
+                    class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center
+                           text-slate-500 hover:text-rose-500 hover:bg-rose-50 text-sm">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-4 text-small">
+          <div>
+            <div class="text-label mb-1">Yesterday's work</div>
+            <div id="detail-yesterday" class="text-slate-800 bg-slate-50 rounded-xl p-3 min-h-[44px]"></div>
+          </div>
+          <div>
+            <div class="text-label mb-1">Today's plan</div>
+            <div id="detail-today" class="text-slate-800 bg-slate-50 rounded-xl p-3 min-h-[44px]"></div>
+          </div>
+          <div>
+            <div class="text-label mb-1">Blockers</div>
+            <div id="detail-blockers" class="bg-rose-50 text-rose-700 rounded-xl p-3 min-h-[40px]"></div>
+          </div>
+          <div>
+            <div class="text-label mb-1">Remarks / notes</div>
+            <div id="detail-remarks" class="bg-violet-50 text-violet-700 rounded-xl p-3 min-h-[40px]"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- SCRIPT -->
   <script>
-    // ================== CONFIG ==================
     const defaultConfig = { meeting_duration: 15 };
 
-    // Supabase config (already created)
     const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
 
@@ -472,6 +523,7 @@
     let timerSeconds = 0;
     let isTimerRunning = false;
     let activeEditId = null;
+    let detailCurrentId = null;
 
     // ================== HELPERS ==================
     function esc(str) {
@@ -486,25 +538,20 @@
     function toLocalYMD(dateLike) {
       const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
       if (isNaN(d)) return null;
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
       const day = String(d.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
+      return `${y}-${m}-${day}`;
     }
 
     function recordMatchesDay(record, ymd) {
       if (!ymd) return false;
-      if (record.date) {
-        // handle both exact "YYYY-MM-DD" and "YYYY-MM-DDTHH:MM"
-        return record.date.startsWith(ymd);
-      }
-      if (record.created_at) {
-        return toLocalYMD(record.created_at) === ymd;
-      }
+      if (record.date) return record.date.startsWith(ymd);
+      if (record.created_at) return toLocalYMD(record.created_at) === ymd;
       return false;
     }
 
-    // ============ Supabase data SDK ============
+    // ================== Supabase SDK ==================
     window.dataSdk = {
       _handler: null,
 
@@ -601,7 +648,7 @@
       }
     };
 
-    // ============ INIT ============
+    // ================== INIT ==================
     document.addEventListener("DOMContentLoaded", initializeApp);
 
     async function initializeApp() {
@@ -610,12 +657,15 @@
       setupStaticListeners();
 
       const todayYMD = toLocalYMD(new Date());
-      const summaryDate = document.getElementById("summary-date");
-      const filterDate = document.getElementById("filter-date");
-      const updateDate = document.getElementById("update-date");
-      if (summaryDate) summaryDate.value = todayYMD;
-      if (filterDate) filterDate.value = todayYMD;
-      if (updateDate) updateDate.value = todayYMD;
+      if (document.getElementById("summary-date")) {
+        document.getElementById("summary-date").value = todayYMD;
+      }
+      if (document.getElementById("filter-date")) {
+        document.getElementById("filter-date").value = todayYMD;
+      }
+      if (document.getElementById("update-date")) {
+        document.getElementById("update-date").value = todayYMD;
+      }
 
       const initResult = await window.dataSdk.init(dataHandler);
       if (!initResult.isOk) {
@@ -623,7 +673,7 @@
       }
     }
 
-    // ============ LISTENERS ============
+    // ================== LISTENERS ==================
     function setupStaticListeners() {
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", () => switchTab(btn.dataset.tab));
@@ -647,9 +697,25 @@
 
       document.getElementById("summary-date").addEventListener("change", updateSummaryView);
       document.getElementById("export-btn").addEventListener("click", exportSummary);
+
+      // Detail modal close
+      document.getElementById("close-detail-modal").addEventListener("click", closeDetailModal);
+      document.getElementById("detail-modal").addEventListener("click", (e) => {
+        if (e.target.id === "detail-modal") closeDetailModal();
+      });
+
+      // Edit from detail modal
+      document.getElementById("detail-edit-btn").addEventListener("click", () => {
+        if (!detailCurrentId) return;
+        const row = currentData.find(r => String(r.id) === String(detailCurrentId));
+        if (row) {
+          closeDetailModal();
+          openModal(row);
+        }
+      });
     }
 
-    // ============ FORM SUBMIT (CREATE / EDIT) ============
+    // ================== FORM SUBMIT ==================
     async function handleFormSubmit(e) {
       e.preventDefault();
 
@@ -681,7 +747,7 @@
 
         let result;
         if (activeEditId) {
-          delete payload.created_at; // don't override original timestamp
+          delete payload.created_at;
           result = await window.dataSdk.update(activeEditId, payload);
         } else {
           result = await window.dataSdk.create(payload);
@@ -703,7 +769,7 @@
       }
     }
 
-    // ============ RENDERING ============
+    // ================== RENDERING ==================
     function updateUI() {
       updateDashboard();
       updateManagerPanel();
@@ -727,11 +793,11 @@
 
       const latestByMember = {};
       todayUpdates.forEach(u => {
-        if (
-          !latestByMember[u.team_member] ||
-          new Date(u.created_at || u.date) > new Date(latestByMember[u.team_member].created_at || latestByMember[u.team_member].date)
-        ) {
-          latestByMember[u.team_member] = u;
+        const key = u.team_member || "_";
+        const current = latestByMember[key];
+        const ts = new Date(u.created_at || u.date || 0);
+        if (!current || ts > new Date(current.created_at || current.date || 0)) {
+          latestByMember[key] = u;
         }
       });
 
@@ -739,8 +805,17 @@
         .map(u => createUpdateCard(u))
         .join("");
 
+      // Enlarge + Edit handlers
+      container.querySelectorAll("[data-view-id]").forEach(card => {
+        card.addEventListener("click", () => {
+          const id = card.dataset.viewId;
+          const row = currentData.find(r => String(r.id) === String(id));
+          if (row) openDetailModal(row);
+        });
+      });
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
           const id = btn.dataset.editId;
           const row = currentData.find(r => String(r.id) === String(id));
           if (row) openModal(row);
@@ -755,9 +830,10 @@
       const initials = update.team_member
         ? update.team_member.split(" ").map(n => n[0]).join("")
         : "?";
+      const dateLabel = toLocalYMD(update.date || update.created_at) || "";
 
       return `
-        <article class="scrum-card p-4 flex flex-col gap-3">
+        <article class="scrum-card p-4 flex flex-col gap-3" data-view-id="${esc(update.id)}">
           <div class="flex items-start justify-between gap-2">
             <div class="flex items-center gap-3">
               <div class="relative">
@@ -818,7 +894,7 @@
           </div>
 
           <div class="flex justify-between items-center text-[0.7rem] text-slate-500 pt-1">
-            <span>${esc(toLocalYMD(update.date || update.created_at) || "")}</span>
+            <span>${esc(dateLabel)}</span>
             <span>
               ${update.created_at
                 ? new Date(update.created_at).toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"})
@@ -840,7 +916,7 @@
         container.innerHTML = `
           <div class="glass p-6 flex flex-col items-center gap-2">
             <div class="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-500">📅</div>
-            <p class="text-sm text-slate-800">No updates for ${esc(selectedDate)}.</p>
+            <p class="text-sm text-slate-900">No updates for ${esc(selectedDate)}.</p>
             <p class="text-small text-slate-500">
               Ask the team to submit standup entries, or pick another date.
             </p>
@@ -936,7 +1012,7 @@
 
       if (member) items = items.filter(u => u.team_member === member);
       if (dept) items = items.filter(u => u.department === dept);
-      if (date)  items = items.filter(u => recordMatchesDay(u, date));
+      if (date) items = items.filter(u => recordMatchesDay(u, date));
 
       displayManagerContent(items);
     }
@@ -1007,8 +1083,10 @@
               const initials = u.team_member
                 ? u.team_member.split(" ").map(n => n[0]).join("")
                 : "?";
+              const dateLabel = toLocalYMD(u.date || u.created_at) || "";
               return `
-                <div class="glass px-3 py-2 flex flex-col gap-1.5 text-[0.8rem]">
+                <div class="glass px-3 py-2 flex flex-col gap-1.5 text-[0.8rem]"
+                     data-view-id="${esc(u.id)}">
                   <div class="flex items-start justify-between gap-2">
                     <div class="flex items-center gap-2">
                       <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[0.7rem] text-white"
@@ -1023,7 +1101,7 @@
                           </span>
                         </div>
                         <div class="text-slate-500 text-[0.75rem]">
-                          ${esc(toLocalYMD(u.date || u.created_at) || "")}
+                          ${esc(dateLabel)}
                           ${hasBlockers ? " • ⚠ Blocker" : ""}
                         </div>
                       </div>
@@ -1063,8 +1141,17 @@
         </div>
       `;
 
+      // Enlarge + Edit handlers
+      container.querySelectorAll("[data-view-id]").forEach(card => {
+        card.addEventListener("click", () => {
+          const id = card.dataset.viewId;
+          const row = currentData.find(r => String(r.id) === String(id));
+          if (row) openDetailModal(row);
+        });
+      });
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
           const id = btn.dataset.editId;
           const row = currentData.find(r => String(r.id) === String(id));
           if (row) openModal(row);
@@ -1072,7 +1159,69 @@
       });
     }
 
-    // ============ EXPORT CSV ============
+    // ================== DETAIL MODAL ==================
+    function openDetailModal(update) {
+      detailCurrentId = update.id;
+
+      const memberInfo = teamMembers[update.team_member] ||
+        { department: update.department || "", color: "#7c3aed" };
+      const initials = update.team_member
+        ? update.team_member.split(" ").map(n => n[0]).join("")
+        : "?";
+      const dateLabel = toLocalYMD(update.date || update.created_at) || "";
+      const createdLabel = update.created_at
+        ? new Date(update.created_at).toLocaleString()
+        : "";
+      const hasBlockers = !!(update.blockers && update.blockers.trim());
+
+      // Avatar
+      const avatar = document.getElementById("detail-avatar");
+      avatar.textContent = initials;
+      avatar.style.background = `linear-gradient(135deg, ${memberInfo.color}, #7c3aed)`;
+
+      document.getElementById("detail-name").textContent =
+        update.team_member || "Unassigned";
+
+      const deptEl = document.getElementById("detail-department");
+      deptEl.innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full" style="background-color:${memberInfo.color};"></span>
+        ${esc(update.department || memberInfo.department || "Department")}
+      `;
+
+      document.getElementById("detail-date").textContent =
+        dateLabel ? `Standup date: ${dateLabel}` : "";
+      document.getElementById("detail-created").textContent =
+        createdLabel ? `Created: ${createdLabel}` : "";
+
+      const statusPill = document.getElementById("detail-status-pill");
+      if (hasBlockers) {
+        statusPill.textContent = "⚠ Has active blockers";
+        statusPill.className =
+          "px-2 py-0.5 rounded-full text-[0.7rem] font-medium bg-rose-50 text-rose-600 border border-rose-200";
+      } else {
+        statusPill.textContent = "✓ No blockers";
+        statusPill.className =
+          "px-2 py-0.5 rounded-full text-[0.7rem] font-medium bg-emerald-50 text-emerald-600 border border-emerald-200";
+      }
+
+      document.getElementById("detail-yesterday").textContent =
+        update.yesterday_work || "No update provided.";
+      document.getElementById("detail-today").textContent =
+        update.today_plan || "No plan provided.";
+      document.getElementById("detail-blockers").textContent =
+        update.blockers || "No blockers reported.";
+      document.getElementById("detail-remarks").textContent =
+        update.remarks || "No additional remarks.";
+
+      document.getElementById("detail-modal").classList.remove("hidden");
+    }
+
+    function closeDetailModal() {
+      detailCurrentId = null;
+      document.getElementById("detail-modal").classList.add("hidden");
+    }
+
+    // ================== EXPORT CSV ==================
     function exportSummary() {
       const selectedDate = document.getElementById("summary-date").value;
       if (!selectedDate) {
@@ -1122,7 +1271,7 @@
       showToast("Summary exported.", "success");
     }
 
-    // ============ UTILITIES ============
+    // ================== UTILITIES ==================
     function updateCurrentDate() {
       const now = new Date();
       document.getElementById("current-date").textContent =
@@ -1212,6 +1361,7 @@
       }, 2600);
     }
 
+    // ================== MODALS OPEN/CLOSE ==================
     function openModal(existing) {
       const modal = document.getElementById("update-modal");
       const title = document.getElementById("modal-title");
@@ -1224,7 +1374,8 @@
         editHint.classList.remove("hidden");
         saveText.textContent = "Save changes";
 
-        document.getElementById("update-date").value = existing.date || toLocalYMD(existing.created_at) || "";
+        document.getElementById("update-date").value =
+          existing.date || toLocalYMD(existing.created_at) || "";
         document.getElementById("team-member").value = existing.team_member || "";
         document.getElementById("department").value = existing.department || "";
         document.getElementById("yesterday-work").value = existing.yesterday_work || "";
