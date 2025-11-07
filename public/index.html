@@ -401,19 +401,17 @@
   <!-- SCRIPT -->
   <script>
     // ================== CONFIG ==================
-    const defaultConfig = {
-      meeting_duration: 15
-    };
+    const defaultConfig = { meeting_duration: 15 };
 
-    // TODO: set these to your actual Supabase project values
+    // Supabase config
     const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
 
     const supabaseHeaders = {
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: "Bearer " + SUPABASE_ANON_KEY,
       "Content-Type": "application/json",
-      "Prefer": "return=representation"
+      Prefer: "return=representation"
     };
 
     const teamMembers = {
@@ -450,7 +448,7 @@
         const url =
           `${SUPABASE_URL}/rest/v1/scrum_updates` +
           `?select=id,date,team_member,department,yesterday_work,today_plan,blockers,remarks,created_at` +
-          `&order=date.desc,created_at.desc`;
+          `&order=date.desc&order=created_at.desc`;
 
         try {
           const resp = await fetch(url, { headers: supabaseHeaders });
@@ -615,11 +613,9 @@
 
         let result;
         if (activeEditId) {
-          // EDIT
-          delete payload.created_at; // don't overwrite original created_at
+          delete payload.created_at;
           result = await window.dataSdk.update(activeEditId, payload);
         } else {
-          // CREATE
           result = await window.dataSdk.create(payload);
         }
 
@@ -661,11 +657,12 @@
 
       emptyState.classList.add("hidden");
 
-      // latest per member
       const latestByMember = {};
       todayUpdates.forEach(u => {
-        if (!latestByMember[u.team_member] ||
-            new Date(u.created_at) > new Date(latestByMember[u.team_member].created_at)) {
+        if (
+          !latestByMember[u.team_member] ||
+          new Date(u.created_at) > new Date(latestByMember[u.team_member].created_at)
+        ) {
           latestByMember[u.team_member] = u;
         }
       });
@@ -674,7 +671,6 @@
         .map(u => createUpdateCard(u))
         .join("");
 
-      // attach edit handlers
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
         btn.addEventListener("click", () => {
           const id = btn.dataset.editId;
@@ -1002,7 +998,6 @@
         </div>
       `;
 
-      // wire edit buttons here too
       container.querySelectorAll("[data-edit-id]").forEach(btn => {
         btn.addEventListener("click", () => {
           const id = btn.dataset.editId;
@@ -1045,11 +1040,11 @@
           (r.yesterday_work || "").replace(/"/g, '""'),
           (r.today_plan || "").replace(/"/g, '""'),
           (r.blockers || "").replace(/"/g, '""'),
-          (r.remarks || "").replace(/"/g, '""'),
+          (r.remarks || "").replace(/"/g, '""')
         ].map(v => `"${v || ""}"`).join(","))
       ];
 
-      const blob = new Blob([lines.join("\n")], {type:"text/csv"});
+      const blob = new Blob([lines.join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1067,7 +1062,7 @@
       const now = new Date();
       document.getElementById("current-date").textContent =
         now.toLocaleDateString("en-US", {
-          weekday:"long", month:"short", day:"numeric", year:"numeric"
+          weekday: "long", month: "short", day: "numeric", year: "numeric"
         });
     }
 
@@ -1106,7 +1101,7 @@
     function updateTimerDisplay() {
       const minutes = Math.floor(timerSeconds / 60);
       const seconds = timerSeconds % 60;
-      const s = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+      const s = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
       const el = document.getElementById("timer-text");
       if (el) el.textContent = s;
     }
@@ -1114,8 +1109,6 @@
     function switchTab(tabName) {
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.classList.remove("active");
-        btn.classList.remove("pill-active");
-        btn.classList.remove("bg-blue-500");
       });
 
       const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
@@ -1129,18 +1122,18 @@
       if (tabName === "manager") updateManagerPanel();
     }
 
-    function showToast(message, type="info") {
-      const toast = document.createElement("div");
-      toast.className =
-        "fixed top-4 right-4 z-50 px-3 py-2 rounded-2xl text-[0.7rem] font-medium" +
-        " shadow-lg shadow-slate-900/80 transform translate-x-full opacity-0 transition-all";
-
+    function showToast(message, type = "info") {
+      const base =
+        "fixed top-4 right-4 z-50 px-3 py-2 rounded-2xl text-[0.7rem] font-medium " +
+        "shadow-lg shadow-slate-900/80 transform translate-x-full opacity-0 transition-all";
       const colors = {
         success: "bg-emerald-500 text-slate-950",
         error: "bg-rose-500 text-slate-950",
         info: "bg-blue-500 text-slate-950"
       };
-      toast.classList.add(colors[type] || colors.info);
+
+      const toast = document.createElement("div");
+      toast.className = base + " " + (colors[type] || colors.info);
       toast.textContent = message;
       document.body.appendChild(toast);
 
