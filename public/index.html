@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Techniline Electronics Scrum Portal</title>
+  <title>Retail Team Scrum Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --brand-bg: #f5f5fb;
+      /* ClickUp-ish light palette */
+      --brand-bg: #f9fafb;
       --brand-surface: #ffffff;
       --brand-border-subtle: #e5e7eb;
-      --brand-text-main: #111827;
+      --brand-text-main: #0f172a;
       --brand-muted: #6b7280;
-      --brand-accent: #7c3aed;
-      --brand-accent-2: #22c55e;
-      --brand-accent-3: #06b6d4;
+      --brand-accent: #7c3aed;       /* purple */
+      --brand-accent-2: #22c55e;     /* green */
+      --brand-accent-3: #06b6d4;     /* teal/blue */
       --brand-accent-soft: rgba(124, 58, 237, 0.06);
-      --radius-xl: 22px;
+      --radius-xl: 24px;
     }
 
     * { box-sizing: border-box; }
@@ -30,15 +31,15 @@
     }
 
     header {
-      background: linear-gradient(to right, #ffffff, #f5f3ff);
+      background: linear-gradient(to right, #ffffff, #faf5ff);
       border-bottom: 1px solid var(--brand-border-subtle);
     }
 
     .glass {
       background: var(--brand-surface);
-      backdrop-filter: blur(0);
-      border: 1px solid var(--brand-border-subtle);
       border-radius: var(--radius-xl);
+      border: 1px solid var(--brand-border-subtle);
+      box-shadow: 0 10px 30px rgba(15,23,42,0.04);
     }
 
     .scrum-card {
@@ -48,19 +49,18 @@
       background:
         radial-gradient(circle at top left, var(--brand-accent-soft), transparent),
         var(--brand-surface);
-      font-size: 0.9rem;
-      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.04);
     }
 
     .scrum-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 35px rgba(15,23,42,0.08);
-      border-color: rgba(124,58,237,0.45);
+      transform: translateY(-3px);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.10);
+      border-color: rgba(124,58,237,0.35);
     }
 
     .department-pill {
-      font-size: 0.72rem;
-      padding: 4px 10px;
+      font-size: 0.75rem;
+      padding: 3px 10px;
       border-radius: 999px;
       font-weight: 500;
       display: inline-flex;
@@ -74,7 +74,7 @@
     .avatar {
       width: 44px;
       height: 44px;
-      border-radius: 14px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -85,8 +85,8 @@
     }
 
     .status-indicator {
-      width: 11px;
-      height: 11px;
+      width: 10px;
+      height: 10px;
       border-radius: 999px;
       border: 2px solid #ffffff;
       position: absolute;
@@ -95,12 +95,12 @@
     }
 
     .modal-overlay {
-      background: rgba(15,23,42,0.18);
+      background: rgba(15,23,42,0.22);
       backdrop-filter: blur(6px);
     }
 
     .pill {
-      padding: 8px 16px;
+      padding: 7px 16px;
       border-radius: 999px;
       border: 1px solid transparent;
       font-size: 0.8rem;
@@ -110,7 +110,7 @@
       cursor: pointer;
       color: var(--brand-muted);
       transition: all 0.16s ease;
-      background: #f9fafb;
+      background: #f3f4ff;
     }
 
     .pill span.dot {
@@ -122,1344 +122,1319 @@
 
     .pill.active {
       color: var(--brand-accent);
-      border-color: rgba(124,58,237,0.6);
-      box-shadow: 0 0 18px rgba(124,58,237,0.16);
+      border-color: rgba(124,58,237,0.7);
+      box-shadow: 0 0 18px rgba(124,58,237,0.18);
       background: #ffffff;
     }
 
     .timer-active {
-      box-shadow: 0 0 14px rgba(34,197,94,0.45);
+      box-shadow: 0 0 14px rgba(34,197,94,0.28);
     }
 
     .text-label {
-      font-size: 0.78rem;
-      color: var(--brand-muted);
-    }
-
-    .text-small {
       font-size: 0.8rem;
+      color: var(--brand-muted);
+      font-weight: 500;
     }
 
-    .rich-text ul { list-style: disc; margin-left: 1.25rem; }
-    .rich-text ol { list-style: decimal; margin-left: 1.25rem; }
-    .rich-text li { margin: 0.1rem 0; }
+    .field-input, .field-textarea, .field-select {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid #d1d5db;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      color: var(--brand-text-main);
+      background: #ffffff;
+      outline: none;
+      transition: all 0.16s ease;
+    }
+
+    .field-input:focus,
+    .field-textarea:focus,
+    .field-select:focus {
+      border-color: var(--brand-accent);
+      box-shadow: 0 0 0 1px rgba(124,58,237,0.18);
+    }
+
+    .field-textarea {
+      resize: vertical;
+      min-height: 68px;
+    }
   </style>
 </head>
-<body class="min-h-screen">
-  <div id="app" class="min-h-screen">
-    <!-- TOP BAR -->
-    <header class="w-full">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-rose-500
-                      flex items-center justify-center font-extrabold text-white text-xl shadow-md">
-            TLE
-          </div>
-          <div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <h1 id="portal-title" class="text-xl md:text-2xl font-semibold tracking-tight text-slate-900">
-                Scrum Portal
-              </h1>
-              <span class="text-[0.7rem] px-2 py-0.5 rounded-full bg-violet-50 border border-violet-200 text-violet-600">
-                Live board
-              </span>
-            </div>
-            <p id="current-date" class="text-xs text-slate-500"></p>
-          </div>
+<body class="min-h-screen text-[15px]">
+<div id="app" class="min-h-screen">
+  <!-- HEADER -->
+  <header class="w-full">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 via-fuchsia-500 to-sky-400
+                    flex items-center justify-center font-extrabold text-white text-xl shadow-md">
+          S
         </div>
-
-        <div class="flex items-center gap-3 flex-wrap">
-          <div id="timer-display"
-               class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs text-slate-600">
-            <span>Standup timer</span>
-            <span id="timer-text" class="font-semibold text-emerald-500">15:00</span>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 id="portal-title" class="text-xl md:text-2xl font-semibold tracking-tight text-slate-900">
+              Retail Team Scrum Portal
+            </h1>
+            <span class="text-[0.7rem] px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600">
+              Live overview
+            </span>
           </div>
-
-          <button id="start-scrum-btn"
-                  class="px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500
-                         text-xs md:text-sm font-semibold text-white shadow-md hover:shadow-violet-300/60
-                         transition-all flex items-center gap-1.5">
-            🚀 Start Scrum
-          </button>
-
-          <button id="add-update-btn"
-                  class="px-4 py-2 rounded-full bg-white border border-slate-200 text-xs md:text-sm
-                         font-medium text-slate-700 hover:border-violet-400 hover:text-violet-600
-                         flex items-center gap-1.5 transition-all">
-            ➕ <span>Add update</span>
-          </button>
+          <p id="current-date" class="text-xs text-slate-500"></p>
         </div>
       </div>
 
-      <!-- TABS -->
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 flex-wrap">
-          <button class="tab-btn pill active" data-tab="dashboard">
-            <span class="dot"></span> Board
-          </button>
-          <button class="tab-btn pill" data-tab="summary">
-            <span class="dot"></span> Summary
-          </button>
-          <button class="tab-btn pill" data-tab="manager">
-            <span class="dot"></span> Manager view
-          </button>
+      <div class="flex items-center gap-3">
+        <div id="timer-display"
+             class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs text-slate-600">
+          <span>Standup timer</span>
+          <span id="timer-text" class="font-semibold text-emerald-500">15:00</span>
         </div>
 
-        <div class="hidden md:flex items-center gap-2 text-[0.7rem] text-slate-500">
-          <span class="px-2 py-1 rounded-full bg-white border border-slate-200">
-            ⏱️ 15-min async + live standup
-          </span>
-          <span class="px-2 py-1 rounded-full bg-white border border-slate-200">
-            🗄️ Supabase storage
-          </span>
-        </div>
-      </div>
-    </header>
+        <button id="start-scrum-btn"
+                class="px-4 py-2 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500
+                       text-xs md:text-sm font-semibold text-white shadow-md hover:shadow-lg
+                       transition-all flex items-center gap-1.5">
+          🚀 Start Scrum
+        </button>
 
-    <!-- MAIN -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <!-- DASHBOARD TAB -->
-      <section id="dashboard-tab" class="tab-content">
-        <div class="flex items-center justify-between gap-3 mb-4">
-          <div>
-            <h2 class="text-lg md:text-xl font-semibold text-slate-900">Today's standup</h2>
-            <p class="text-small text-slate-500">
-              Latest update per person for today. Click a card to view full details.
-            </p>
-          </div>
-        </div>
-
-        <div id="team-updates" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
-
-        <div id="empty-state"
-             class="mt-8 flex flex-col items-center justify-center gap-3 py-10
-                    glass border-dashed">
-          <div class="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-500">
-            📝
-          </div>
-          <h3 class="text-base font-medium text-slate-900">No updates yet for today</h3>
-          <p class="text-small text-slate-500">Kick things off by adding the first standup entry.</p>
-          <button class="add-update-trigger px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500
-                         text-xs md:text-sm font-semibold text-white shadow hover:shadow-violet-300/60 transition-all">
-            Add first update
-          </button>
-        </div>
-      </section>
-
-      <!-- SUMMARY TAB -->
-      <section id="summary-tab" class="tab-content hidden">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
-          <div>
-            <h2 class="text-lg md:text-xl font-semibold text-slate-900">Daily summary</h2>
-            <p class="text-small text-slate-500">
-              Pick a date to see who did what. Lists created with <code>-</code> or <code>1.</code> are rendered as bullets.
-            </p>
-          </div>
-
-          <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-            <div class="flex items-center gap-2">
-              <div class="flex flex-col">
-                <span class="text-label">Date</span>
-                <input type="date"
-                       id="summary-date"
-                       class="px-3 py-1.5 text-xs rounded-full bg-white border border-slate-200
-                              text-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-500" />
-              </div>
-              <button id="export-btn"
-                      class="mt-4 sm:mt-5 px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400
-                             text-[0.75rem] font-semibold text-white flex items-center gap-1.5">
-                📄 Export day CSV
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div id="summary-content" class="space-y-4"></div>
-      </section>
-
-      <!-- MANAGER TAB -->
-      <section id="manager-tab" class="tab-content hidden">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
-          <div>
-            <h2 class="text-lg md:text-xl font-semibold text-slate-900">Manager view</h2>
-            <p class="text-small text-slate-500">
-              Filter by member, department or date. Click a row to enlarge the record.
-            </p>
-          </div>
-        </div>
-
-        <div class="glass p-4 mb-4">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-            <div>
-              <span class="text-label">Team member</span>
-              <select id="filter-member"
-                      class="w-full mt-1 px-3 py-1.8 text-xs rounded-full bg-white border border-slate-200
-                             text-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-500">
-                <option value="">All team members</option>
-              </select>
-            </div>
-
-            <div>
-              <span class="text-label">Department</span>
-              <select id="filter-department"
-                      class="w-full mt-1 px-3 py-1.8 text-xs rounded-full bg-white border border-slate-200
-                             text-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-500">
-                <option value="">All departments</option>
-                <option value="Management">Management</option>
-                <option value="Retail / MM">Retail / MM</option>
-                <option value="E-commerce">E-commerce</option>
-                <option value="Logistics">Logistics</option>
-                <option value="Fulfillment">Fulfillment</option>
-                <option value="Customer Exp">Customer Exp</option>
-              </select>
-            </div>
-
-            <div>
-              <span class="text-label">Date</span>
-              <input type="date"
-                     id="filter-date"
-                     class="w-full mt-1 px-3 py-1.8 text-xs rounded-full bg-white border border-slate-200
-                            text-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-500" />
-            </div>
-          </div>
-
-          <div id="blocker-escalation-area" class="text-xs"></div>
-        </div>
-
-        <div id="manager-content" class="space-y-3"></div>
-      </section>
-    </main>
-
-    <!-- CREATE / EDIT MODAL -->
-    <div id="update-modal"
-         class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center px-3">
-      <div class="glass max-w-xl w-full max-h-[90vh] overflow-y-auto p-5">
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <h3 id="modal-title" class="text-base font-semibold text-slate-900">
-              New standup update
-            </h3>
-            <p class="text-small text-slate-500">
-              Use separate lines. Start lines with <code>-</code> or <code>1.</code> for bullet / numbered lists.
-            </p>
-          </div>
-          <button id="close-modal"
-                  class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center
-                         text-slate-500 hover:text-rose-500 hover:bg-rose-50 text-sm">
-            ✕
-          </button>
-        </div>
-
-        <form id="update-form" class="space-y-3 text-small">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block mb-1 text-label">Date</label>
-              <input type="date" id="update-date" name="date" required
-                     class="w-full px-3 py-1.8 rounded-xl bg-white border border-slate-200
-                            text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-500" />
-            </div>
-            <div>
-              <label class="block mb-1 text-label">Team member</label>
-              <select id="team-member" name="team_member" required
-                      class="w-full px-3 py-1.8 rounded-xl bg-white border border-slate-200
-                             text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-500">
-                <option value="">Select</option>
-                <option value="Amrit">Amrit</option>
-                <option value="Vihan">Vihan</option>
-                <option value="Maricel">Maricel</option>
-                <option value="Kunal">Kunal</option>
-                <option value="Mehboob">Mehboob</option>
-                <option value="Aaron">Aaron</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block mb-1 text-label">Department</label>
-            <select id="department" name="department" required
-                    class="w-full px-3 py-1.8 rounded-xl bg-white border border-slate-200
-                           text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-500">
-              <option value="">Select department</option>
-              <option value="Management">Management</option>
-              <option value="Retail / MM">Retail / MM</option>
-              <option value="E-commerce">E-commerce</option>
-              <option value="Logistics">Logistics</option>
-              <option value="Fulfillment">Fulfillment</option>
-              <option value="Customer Exp">Customer Exp</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block mb-1 text-label">Yesterday's work</label>
-            <textarea id="yesterday-work" name="yesterday_work" rows="3"
-                      placeholder="- Completed listing upload
-- Synced with suppliers"
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
-                             text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
-          </div>
-
-          <div>
-            <label class="block mb-1 text-label">Today's plan</label>
-            <textarea id="today-plan" name="today_plan" rows="3"
-                      placeholder="- Push live campaign
-- Review stock levels"
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
-                             text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
-          </div>
-
-          <div>
-            <label class="block mb-1 text-label">Blockers</label>
-            <textarea id="blockers" name="blockers" rows="2"
-                      placeholder="- Waiting on pricing approval
-- API issue with marketplace"
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-rose-100
-                             text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-rose-400"></textarea>
-          </div>
-
-          <div>
-            <label class="block mb-1 text-label">Remarks / notes</label>
-            <textarea id="remarks" name="remarks" rows="2"
-                      placeholder="- Urgent items for leadership
-- Dependencies to track"
-                      class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200
-                             text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
-          </div>
-
-          <div class="flex justify-between items-center pt-2 gap-3">
-            <button type="button" id="cancel-btn"
-                    class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-[0.8rem]
-                           hover:bg-slate-200 hover:text-slate-800">
-              Cancel
-            </button>
-            <div class="flex items-center gap-2">
-              <span id="edit-hint"
-                    class="hidden text-[0.75rem] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                Editing existing entry
-              </span>
-              <button type="submit" id="save-btn"
-                      class="px-4 py-1.8 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500
-                             text-[0.8rem] font-semibold text-white flex items-center gap-1.5
-                             hover:shadow-lg hover:shadow-violet-300/60 transition-all">
-                <span id="save-text">Save update</span>
-                <span id="save-loading" class="hidden">Saving…</span>
-              </button>
-            </div>
-          </div>
-        </form>
+        <button id="add-update-btn"
+                class="px-4 py-2 rounded-full bg-white border border-slate-200 text-xs md:text-sm
+                       font-medium text-slate-800 hover:border-purple-400 hover:text-purple-600
+                       flex items-center gap-1.5 transition-all">
+          ➕ <span>Add update</span>
+        </button>
       </div>
     </div>
 
-    <!-- DETAIL (ENLARGED RECORD) MODAL -->
-    <div id="detail-modal"
-         class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center px-3">
-      <div class="glass max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
-        <div class="flex items-start justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
-            <div id="detail-avatar" class="avatar"></div>
-            <div>
-              <h3 id="detail-name" class="text-lg font-semibold text-slate-900"></h3>
-              <div class="flex flex-wrap items-center gap-2 mt-1">
-                <span id="detail-department" class="department-pill"></span>
-                <span id="detail-date" class="text-[0.75rem] text-slate-500"></span>
-                <span id="detail-created" class="text-[0.7rem] text-slate-400"></span>
-              </div>
-            </div>
+    <!-- TABS -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <button class="tab-btn pill active" data-tab="dashboard">
+          <span class="dot"></span> Board
+        </button>
+        <button class="tab-btn pill" data-tab="summary">
+          <span class="dot" style="background-color: var(--brand-accent-2);"></span> Summary
+        </button>
+        <button class="tab-btn pill" data-tab="manager">
+          <span class="dot" style="background-color: var(--brand-accent-3);"></span> Manager view
+        </button>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 text-[0.7rem] text-slate-500">
+        <span class="px-2 py-1 rounded-full bg-white border border-slate-200">
+          ⏱️ 15-min async + live standup
+        </span>
+        <span class="px-2 py-1 rounded-full bg-white border border-slate-200">
+          🔐 Powered by Supabase
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- DASHBOARD TAB -->
+    <section id="dashboard-tab" class="tab-content">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg md:text-xl font-semibold text-slate-900">Today's standup</h2>
+          <p class="text-sm text-slate-500">
+            Live cards for each team member’s latest update.
+          </p>
+        </div>
+      </div>
+
+      <div id="team-updates" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+
+      <div id="empty-state"
+           class="mt-8 flex flex-col items-center justify-center gap-3 py-10 glass border-dashed">
+        <div class="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-2xl text-purple-500">
+          📝
+        </div>
+        <h3 class="text-sm md:text-base font-medium text-slate-900">No updates yet for today</h3>
+        <p class="text-xs md:text-sm text-slate-500">
+          Kick things off by adding the first standup entry.
+        </p>
+        <button class="add-update-trigger px-4 py-2 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500
+                       text-xs md:text-sm font-semibold text-white shadow hover:shadow-lg transition-all">
+          Add first update
+        </button>
+      </div>
+    </section>
+
+    <!-- SUMMARY TAB -->
+    <section id="summary-tab" class="tab-content hidden">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg md:text-xl font-semibold text-slate-900">Summary & Export</h2>
+          <p class="text-sm text-slate-500">
+            See standups for a specific day or export a date range.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-label">Day:</span>
+            <input type="date" id="summary-date"
+                   class="field-input !px-3 !py-1.5 !rounded-full !text-xs" />
           </div>
-          <div class="flex flex-col items-end gap-2">
-            <span id="detail-status-pill"
-                  class="px-2 py-0.5 rounded-full text-[0.7rem] font-medium"></span>
-            <button id="detail-edit-btn"
-                    class="px-3 py-1.5 rounded-full bg-violet-50 text-violet-600 text-[0.75rem]
-                           hover:bg-violet-100 flex items-center gap-1">
-              ✏ Edit this
-            </button>
-            <button id="close-detail-modal"
-                    class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center
-                           text-slate-500 hover:text-rose-500 hover:bg-rose-50 text-sm">
-              ✕
-            </button>
+          <div class="flex items-center gap-1.5">
+            <span class="text-label">From:</span>
+            <input type="date" id="range-from"
+                   class="field-input !px-3 !py-1.5 !rounded-full !text-xs" />
+            <span class="text-label">To:</span>
+            <input type="date" id="range-to"
+                   class="field-input !px-3 !py-1.5 !rounded-full !text-xs" />
+          </div>
+          <button id="export-range-btn"
+                  class="px-4 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400
+                         text-[0.75rem] font-semibold text-white flex items-center gap-1.5">
+            📄 Export CSV (range)
+          </button>
+        </div>
+      </div>
+      <div id="summary-content" class="space-y-4"></div>
+    </section>
+
+    <!-- MANAGER TAB -->
+    <section id="manager-tab" class="tab-content hidden">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+        <div>
+          <h2 class="text-lg md:text-xl font-semibold text-slate-900">Manager view</h2>
+          <p class="text-sm text-slate-500">
+            Filter by member, department or date. Quickly scan blockers and engagement.
+          </p>
+        </div>
+      </div>
+
+      <div class="glass p-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+          <select id="filter-member" class="field-select">
+            <option value="">All team members</option>
+          </select>
+
+          <select id="filter-department" class="field-select">
+            <option value="">All departments</option>
+            <option value="Management">Management</option>
+            <option value="Retail / MM">Retail / MM</option>
+            <option value="E-commerce">E-commerce</option>
+            <option value="Logistics">Logistics</option>
+            <option value="Fulfillment">Fulfillment</option>
+            <option value="Customer Exp">Customer Exp</option>
+          </select>
+
+          <input type="date" id="filter-date" class="field-input" />
+        </div>
+
+        <div id="blocker-escalation-area" class="text-xs"></div>
+      </div>
+
+      <div id="manager-content" class="space-y-3"></div>
+    </section>
+  </main>
+
+  <!-- CREATE / EDIT MODAL -->
+  <div id="update-modal"
+       class="fixed inset-0 z-40 hidden modal-overlay flex items-center justify-center px-3">
+    <div class="glass max-w-xl w-full max-h-[90vh] overflow-y-auto p-5">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 id="modal-title" class="text-base font-semibold text-slate-900">
+            New standup update
+          </h3>
+          <p class="text-xs text-slate-500">
+            Shift+Enter inside fields to quickly add bullet points.
+          </p>
+        </div>
+        <button id="close-modal"
+                class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center
+                       text-slate-500 hover:text-red-500 hover:bg-red-50 text-sm">
+          ✕
+        </button>
+      </div>
+
+      <form id="update-form" class="space-y-3 text-[0.85rem]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-label mb-1 block">Date</label>
+            <input type="date" id="update-date" name="date" required class="field-input" />
+          </div>
+          <div>
+            <label class="text-label mb-1 block">Team member</label>
+            <select id="team-member" name="team_member" required class="field-select">
+              <option value="">Select</option>
+              <!-- dynamically filled from team_members -->
+            </select>
           </div>
         </div>
 
-        <div class="space-y-4 text-small">
-          <div>
-            <div class="text-label mb-1">Yesterday's work</div>
-            <div id="detail-yesterday" class="rich-text text-slate-800 bg-slate-50 rounded-xl p-3 min-h-[44px]"></div>
-          </div>
-          <div>
-            <div class="text-label mb-1">Today's plan</div>
-            <div id="detail-today" class="rich-text text-slate-800 bg-slate-50 rounded-xl p-3 min-h-[44px]"></div>
-          </div>
-          <div>
-            <div class="text-label mb-1">Blockers</div>
-            <div id="detail-blockers" class="rich-text bg-rose-50 text-rose-700 rounded-xl p-3 min-h-[40px]"></div>
-          </div>
-          <div>
-            <div class="text-label mb-1">Remarks / notes</div>
-            <div id="detail-remarks" class="rich-text bg-violet-50 text-violet-700 rounded-xl p-3 min-h-[40px]"></div>
+        <div>
+          <label class="text-label mb-1 block">Department</label>
+          <select id="department" name="department" required class="field-select">
+            <option value="">Select department</option>
+            <option value="Management">Management</option>
+            <option value="Retail / MM">Retail / MM</option>
+            <option value="E-commerce">E-commerce</option>
+            <option value="Logistics">Logistics</option>
+            <option value="Fulfillment">Fulfillment</option>
+            <option value="Customer Exp">Customer Exp</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-label mb-1 block">Yesterday's work</label>
+          <textarea id="yesterday-work" name="yesterday_work"
+                    placeholder="e.g. • Completed store layout review"
+                    class="field-textarea"></textarea>
+        </div>
+
+        <div>
+          <label class="text-label mb-1 block">Today's plan</label>
+          <textarea id="today-plan" name="today_plan"
+                    placeholder="e.g. • Launch promo for Category X"
+                    class="field-textarea"></textarea>
+        </div>
+
+        <div>
+          <label class="text-label mb-1 block">Blockers</label>
+          <textarea id="blockers" name="blockers"
+                    placeholder="e.g. • Awaiting data from supplier"
+                    class="field-textarea"></textarea>
+        </div>
+
+        <div>
+          <label class="text-label mb-1 block">Remarks / notes</label>
+          <textarea id="remarks" name="remarks"
+                    placeholder="Optional context for managers"
+                    class="field-textarea"></textarea>
+        </div>
+
+        <div class="flex justify-between items-center pt-2 gap-3">
+          <button type="button" id="cancel-btn"
+                  class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs
+                         hover:bg-slate-200 hover:text-slate-900">
+            Cancel
+          </button>
+          <div class="flex items-center gap-2">
+            <span id="edit-hint"
+                  class="hidden text-[0.7rem] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+              Editing existing entry
+            </span>
+            <button type="submit" id="save-btn"
+                    class="px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500
+                           text-xs md:text-sm font-semibold text-white flex items-center gap-1.5
+                           hover:shadow-lg hover:shadow-purple-300/40 transition-all">
+              <span id="save-text">Save update</span>
+              <span id="save-loading" class="hidden">Saving…</span>
+            </button>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 
-  <!-- SCRIPT -->
-  <script>
-    const defaultConfig = { meeting_duration: 15 };
+  <!-- VIEW DETAIL MODAL (read-only enlarged card) -->
+  <div id="view-modal"
+       class="fixed inset-0 z-30 hidden modal-overlay flex items-center justify-center px-3">
+    <div class="glass max-w-xl w-full max-h-[90vh] overflow-y-auto p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-slate-900">Standup details</h3>
+        <button id="close-view-modal"
+                class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center
+                       text-slate-500 hover:text-red-500 hover:bg-red-50 text-sm">
+          ✕
+        </button>
+      </div>
+      <div id="view-modal-body" class="space-y-3 text-[0.9rem]"></div>
+    </div>
+  </div>
+</div>
 
-    const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
+<script>
+  // ================== CONFIG ==================
+  const defaultConfig = { meeting_duration: 15 };
 
-    const supabaseHeaders = {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: "Bearer " + SUPABASE_ANON_KEY,
-      "Content-Type": "application/json",
-      Prefer: "return=representation"
-    };
+  // Supabase config (keep these updated to your project)
+  const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
 
-    const teamMembers = {
-      "Amrit":   { department: "Management",   color: "#38bdf8" },
-      "Vihan":   { department: "Retail / MM",  color: "#22c55e" },
-      "Maricel": { department: "E-commerce",   color: "#fb923c" },
-      "Kunal":   { department: "Logistics",    color: "#6366f1" },
-      "Mehboob": { department: "Fulfillment",  color: "#a855f7" },
-      "Aaron":   { department: "Customer Exp", color: "#f97316" }
-    };
+  const supabaseHeaders = {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: "Bearer " + SUPABASE_ANON_KEY,
+    "Content-Type": "application/json",
+    Prefer: "return=representation"
+  };
 
-    let currentData = [];
-    let timerInterval = null;
-    let timerSeconds = 0;
-    let isTimerRunning = false;
-    let activeEditId = null;
-    let detailCurrentId = null;
+  let teamMembersIndex = {}; // name -> {department, color}
+  let currentData = [];
+  let timerInterval = null;
+  let timerSeconds = 0;
+  let isTimerRunning = false;
+  let activeEditId = null;
 
-    // ================== HELPERS ==================
-    function esc(str) {
-      return (str || "")
-        .toString()
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
+  function esc(str) {
+    return (str || "")
+      .toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
 
-    function renderRichText(text) {
-      const value = (text || "").trim();
-      if (!value) return '<span class="text-slate-400">—</span>';
+  // ================== Supabase SDK ==================
+  window.dataSdk = {
+    _handler: null,
 
-      const rawLines = value.split(/\r?\n/).map(l => l.trim());
-      const lines = rawLines.filter(l => l.length);
-      if (!lines.length) return esc(value);
+    async init(handler) {
+      this._handler = handler;
 
-      const allBullet = lines.every(l => /^[-*•]\s+/.test(l));
-      const allNumber = lines.every(l => /^\d+\.\s+/.test(l));
+      try {
+        // 1) Load team members
+        await loadTeamMembers();
 
-      if (allBullet) {
-        const items = lines.map(l => esc(l.replace(/^[-*•]\s+/, "")));
-        return `<ul class="space-y-0.5">${items.map(i => `<li>${i}</li>`).join("")}</ul>`;
-      }
-
-      if (allNumber) {
-        const items = lines.map(l => esc(l.replace(/^\d+\.\s+/, "")));
-        return `<ol class="space-y-0.5">${items.map(i => `<li>${i}</li>`).join("")}</ol>`;
-      }
-
-      // mixed or plain: keep line breaks
-      return esc(value).replace(/\n/g, "<br>");
-    }
-
-    function toLocalYMD(dateLike) {
-      const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
-      if (isNaN(d)) return null;
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${day}`;
-    }
-
-    function recordMatchesDay(record, ymd) {
-      if (!ymd) return false;
-      if (record.date) {
-        // handle date or timestamp stored in date field
-        const d = record.date.split("T")[0];
-        return d === ymd;
-      }
-      if (record.created_at) return toLocalYMD(record.created_at) === ymd;
-      return false;
-    }
-
-    // ================== Supabase SDK ==================
-    window.dataSdk = {
-      _handler: null,
-
-      async init(handler) {
-        this._handler = handler;
+        // 2) Load scrum updates
         const url =
           `${SUPABASE_URL}/rest/v1/scrum_updates` +
           `?select=id,date,team_member,department,yesterday_work,today_plan,blockers,remarks,created_at` +
           `&order=date.desc&order=created_at.desc`;
 
-        try {
-          const resp = await fetch(url, { headers: supabaseHeaders });
-          if (!resp.ok) {
-            console.error("Supabase GET failed", await resp.text());
-            handler.onDataChanged([]);
-            return { isOk: false };
-          }
-          const rows = await resp.json();
-
-          const mapped = rows.map(r => ({
-            id: r.id,
-            date: r.date,
-            team_member: r.team_member,
-            department: r.department,
-            yesterday_work: r.yesterday_work,
-            today_plan: r.today_plan,
-            blockers: r.blockers,
-            remarks: r.remarks,
-            created_at: r.created_at
-          }));
-
-          handler.onDataChanged(mapped);
-          return { isOk: true };
-        } catch (err) {
-          console.error("Supabase init error", err);
+        const resp = await fetch(url, { headers: supabaseHeaders });
+        if (!resp.ok) {
+          console.error("Supabase GET failed", await resp.text());
           handler.onDataChanged([]);
           return { isOk: false };
         }
-      },
 
-      async create(row) {
-        try {
-          const resp = await fetch(
-            `${SUPABASE_URL}/rest/v1/scrum_updates`,
-            {
-              method: "POST",
-              headers: supabaseHeaders,
-              body: JSON.stringify(row)
-            }
-          );
+        const rows = await resp.json();
+        const mapped = rows.map(r => ({
+          id: r.id,
+          date: r.date,
+          team_member: r.team_member,
+          department: r.department,
+          yesterday_work: r.yesterday_work,
+          today_plan: r.today_plan,
+          blockers: r.blockers,
+          remarks: r.remarks,
+          created_at: r.created_at
+        }));
 
-          if (!resp.ok) {
-            console.error("Supabase INSERT failed:", await resp.text());
-            return { isOk: false };
-          }
-
-          await this.init(this._handler);
-          return { isOk: true };
-        } catch (err) {
-          console.error("Supabase create error", err);
-          return { isOk: false };
-        }
-      },
-
-      async update(id, partial) {
-        try {
-          const resp = await fetch(
-            `${SUPABASE_URL}/rest/v1/scrum_updates?id=eq.${encodeURIComponent(id)}`,
-            {
-              method: "PATCH",
-              headers: supabaseHeaders,
-              body: JSON.stringify(partial)
-            }
-          );
-
-          if (!resp.ok) {
-            console.error("Supabase UPDATE failed:", await resp.text());
-            return { isOk: false };
-          }
-
-          await this.init(this._handler);
-          return { isOk: true };
-        } catch (err) {
-          console.error("Supabase update error", err);
-          return { isOk: false };
-        }
-      }
-    };
-
-    const dataHandler = {
-      onDataChanged(data) {
-        currentData = data;
-        updateUI();
-      }
-    };
-
-    // ================== INIT ==================
-    document.addEventListener("DOMContentLoaded", initializeApp);
-
-    async function initializeApp() {
-      updateCurrentDate();
-      updateTimerDisplay();
-      setupStaticListeners();
-
-      const todayYMD = toLocalYMD(new Date());
-      if (document.getElementById("summary-date")) {
-        document.getElementById("summary-date").value = todayYMD;
-      }
-      if (document.getElementById("filter-date")) {
-        document.getElementById("filter-date").value = todayYMD;
-      }
-      if (document.getElementById("update-date")) {
-        document.getElementById("update-date").value = todayYMD;
-      }
-
-      const initResult = await window.dataSdk.init(dataHandler);
-      if (!initResult.isOk) {
-        console.error("Failed to init data from Supabase");
-      }
-    }
-
-    // ================== LISTENERS ==================
-    function setupStaticListeners() {
-      document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-
-      document.getElementById("add-update-btn")
-        .addEventListener("click", () => openModal());
-      document.querySelector(".add-update-trigger")
-        ?.addEventListener("click", () => openModal());
-
-      document.getElementById("close-modal").addEventListener("click", closeModal);
-      document.getElementById("cancel-btn").addEventListener("click", closeModal);
-
-      document.getElementById("update-form").addEventListener("submit", handleFormSubmit);
-
-      document.getElementById("start-scrum-btn").addEventListener("click", toggleTimer);
-
-      document.getElementById("filter-member").addEventListener("change", applyFilters);
-      document.getElementById("filter-department").addEventListener("change", applyFilters);
-      document.getElementById("filter-date").addEventListener("change", applyFilters);
-
-      document.getElementById("summary-date").addEventListener("change", updateSummaryView);
-      document.getElementById("export-btn").addEventListener("click", exportSummary);
-
-      // Detail modal close logic
-      document.getElementById("close-detail-modal").addEventListener("click", closeDetailModal);
-      document.getElementById("detail-modal").addEventListener("click", (e) => {
-        if (e.target.id === "detail-modal") closeDetailModal();
-      });
-
-      // Edit from detail modal
-      document.getElementById("detail-edit-btn").addEventListener("click", () => {
-        if (!detailCurrentId) return;
-        const row = currentData.find(r => String(r.id) === String(detailCurrentId));
-        if (row) {
-          closeDetailModal();
-          openModal(row);
-        }
-      });
-    }
-
-    // ================== FORM SUBMIT ==================
-    async function handleFormSubmit(e) {
-      e.preventDefault();
-
-      if (currentData.length >= 999) {
-        showToast("Max 999 updates reached. Clean up old entries.", "error");
-        return;
-      }
-
-      const saveBtn = document.getElementById("save-btn");
-      const saveText = document.getElementById("save-text");
-      const saveLoading = document.getElementById("save-loading");
-
-      saveBtn.disabled = true;
-      saveText.classList.add("hidden");
-      saveLoading.classList.remove("hidden");
-
-      try {
-        const formData = new FormData(e.target);
-        const payload = {
-          date: formData.get("date"),
-          team_member: formData.get("team_member"),
-          department: formData.get("department"),
-          yesterday_work: formData.get("yesterday_work") || "",
-          today_plan: formData.get("today_plan") || "",
-          blockers: formData.get("blockers") || "",
-          remarks: formData.get("remarks") || "",
-          created_at: new Date().toISOString()
-        };
-
-        let result;
-        if (activeEditId) {
-          delete payload.created_at;
-          result = await window.dataSdk.update(activeEditId, payload);
-        } else {
-          result = await window.dataSdk.create(payload);
-        }
-
-        if (result.isOk) {
-          closeModal();
-          showToast(activeEditId ? "Update saved." : "New entry added.", "success");
-        } else {
-          showToast("Failed to save update. Check Supabase config / console.", "error");
-        }
+        handler.onDataChanged(mapped);
+        return { isOk: true };
       } catch (err) {
-        console.error(err);
-        showToast("Unexpected error while saving.", "error");
-      } finally {
-        saveBtn.disabled = false;
-        saveText.classList.remove("hidden");
-        saveLoading.classList.add("hidden");
+        console.error("Supabase init error", err);
+        handler.onDataChanged([]);
+        return { isOk: false };
+      }
+    },
+
+    async create(row) {
+      try {
+        const resp = await fetch(
+          `${SUPABASE_URL}/rest/v1/scrum_updates`,
+          {
+            method: "POST",
+            headers: supabaseHeaders,
+            body: JSON.stringify(row)
+          }
+        );
+
+        if (!resp.ok) {
+          console.error("Supabase INSERT failed:", await resp.text());
+          return { isOk: false };
+        }
+
+        await this.init(this._handler);
+        return { isOk: true };
+      } catch (err) {
+        console.error("Supabase create error", err);
+        return { isOk: false };
+      }
+    },
+
+    async update(id, partial) {
+      try {
+        const resp = await fetch(
+          `${SUPABASE_URL}/rest/v1/scrum_updates?id=eq.${encodeURIComponent(id)}`,
+          {
+            method: "PATCH",
+            headers: supabaseHeaders,
+            body: JSON.stringify(partial)
+          }
+        );
+
+        if (!resp.ok) {
+          console.error("Supabase UPDATE failed:", await resp.text());
+          return { isOk: false };
+        }
+
+        await this.init(this._handler);
+        return { isOk: true };
+      } catch (err) {
+        console.error("Supabase update error", err);
+        return { isOk: false };
       }
     }
+  };
 
-    // ================== RENDERING ==================
-    function updateUI() {
-      updateDashboard();
-      updateManagerPanel();
-      updateSummaryView();
-    }
+  async function loadTeamMembers() {
+    try {
+      const url = `${SUPABASE_URL}/rest/v1/team_members?select=name,department,color,active&order=name.asc`;
+      const resp = await fetch(url, { headers: supabaseHeaders });
 
-    function updateDashboard() {
-      const container = document.getElementById("team-updates");
-      const emptyState = document.getElementById("empty-state");
-      const todayYMD = toLocalYMD(new Date());
-
-      const todayUpdates = currentData.filter(u => recordMatchesDay(u, todayYMD));
-
-      if (!todayUpdates.length) {
-        container.innerHTML = "";
-        emptyState.classList.remove("hidden");
+      if (!resp.ok) {
+        console.error("team_members GET failed", await resp.text());
+        teamMembersIndex = {};
+        populateTeamMemberSelect();
         return;
       }
 
-      emptyState.classList.add("hidden");
+      const rows = await resp.json();
+      teamMembersIndex = {};
 
-      const latestByMember = {};
-      todayUpdates.forEach(u => {
-        const key = u.team_member || "_";
-        const current = latestByMember[key];
-        const ts = new Date(u.created_at || u.date || 0);
-        if (!current || ts > new Date(current.created_at || current.date || 0)) {
-          latestByMember[key] = u;
-        }
-      });
+      rows
+        .filter(r => r.active !== false)
+        .forEach(r => {
+          teamMembersIndex[r.name] = {
+            department: r.department || "",
+            color: r.color || randomColorForName(r.name)
+          };
+        });
 
-      container.innerHTML = Object.values(latestByMember)
-        .map(u => createUpdateCard(u))
+      populateTeamMemberSelect();
+    } catch (err) {
+      console.error("Error loading team_members:", err);
+      teamMembersIndex = {};
+      populateTeamMemberSelect();
+    }
+  }
+
+  function populateTeamMemberSelect() {
+    const select = document.getElementById("team-member");
+    if (!select) return;
+
+    const current = select.value;
+    select.innerHTML = '<option value="">Select</option>' +
+      Object.keys(teamMembersIndex)
+        .map(name => `<option value="${esc(name)}">${esc(name)}</option>`)
         .join("");
 
-      // card -> detail
-      container.querySelectorAll("[data-view-id]").forEach(card => {
-        card.addEventListener("click", () => {
-          const id = card.dataset.viewId;
-          const row = currentData.find(r => String(r.id) === String(id));
-          if (row) openDetailModal(row);
-        });
+    if (current && teamMembersIndex[current]) {
+      select.value = current;
+    }
+  }
+
+  function randomColorForName(name) {
+    const colors = ["#7c3aed","#22c55e","#06b6d4","#f97316","#e11d48","#6366f1"];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  const dataHandler = {
+    onDataChanged(data) {
+      currentData = data;
+      updateUI();
+    }
+  };
+
+  // ================== INIT ==================
+  document.addEventListener("DOMContentLoaded", initializeApp);
+
+  async function initializeApp() {
+    updateCurrentDate();
+    updateTimerDisplay();
+    setupStaticListeners();
+    setupBulletEnhancers();
+
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("update-date").value = today;
+    document.getElementById("summary-date").value = today;
+    document.getElementById("filter-date").value = today;
+    document.getElementById("range-from").value = today;
+    document.getElementById("range-to").value = today;
+
+    const initResult = await window.dataSdk.init(dataHandler);
+    if (!initResult.isOk) {
+      console.error("Failed to init data from Supabase");
+    }
+  }
+
+  // ================== LISTENERS ==================
+  function setupStaticListeners() {
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    });
+
+    document.getElementById("add-update-btn")
+      .addEventListener("click", () => openModal());
+    document.querySelector(".add-update-trigger")
+      ?.addEventListener("click", () => openModal());
+
+    document.getElementById("close-modal").addEventListener("click", closeModal);
+    document.getElementById("cancel-btn").addEventListener("click", closeModal);
+    document.getElementById("update-form").addEventListener("submit", handleFormSubmit);
+
+    document.getElementById("start-scrum-btn").addEventListener("click", toggleTimer);
+
+    document.getElementById("filter-member").addEventListener("change", applyFilters);
+    document.getElementById("filter-department").addEventListener("change", applyFilters);
+    document.getElementById("filter-date").addEventListener("change", applyFilters);
+
+    document.getElementById("summary-date").addEventListener("change", updateSummaryView);
+    document.getElementById("export-range-btn").addEventListener("click", exportRange);
+
+    document.getElementById("close-view-modal")
+      .addEventListener("click", closeViewModal);
+  }
+
+  function setupBulletEnhancers() {
+    ["yesterday-work", "today-plan", "blockers", "remarks"].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener("keydown", e => {
+        if (e.key === "Enter" && e.shiftKey) {
+          e.preventDefault();
+          const { selectionStart, selectionEnd, value } = el;
+          const prefix = "• ";
+          const before = value.slice(0, selectionStart);
+          const after = value.slice(selectionEnd);
+          const needsNewLine = before.length > 0 && !before.endsWith("\n");
+          const insert = (needsNewLine ? "\n" : "") + prefix;
+          el.value = before + insert + after;
+          const pos = before.length + insert.length;
+          el.setSelectionRange(pos, pos);
+        }
       });
-      // edit buttons (no detail trigger)
-      container.querySelectorAll("[data-edit-id]").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const id = btn.dataset.editId;
-          const row = currentData.find(r => String(r.id) === String(id));
-          if (row) openModal(row);
-        });
-      });
+    });
+  }
+
+  // ================== FORM (CREATE / EDIT) ==================
+  async function handleFormSubmit(e) {
+    e.preventDefault();
+
+    if (currentData.length >= 999) {
+      showToast("Max 999 updates reached. Clean old entries.", "error");
+      return;
     }
 
-    function createUpdateCard(update) {
-      const memberInfo = teamMembers[update.team_member] ||
-        { department: update.department || "", color: "#64748b" };
-      const hasBlockers = !!(update.blockers && update.blockers.trim());
-      const initials = update.team_member
-        ? update.team_member.split(" ").map(n => n[0]).join("")
-        : "?";
-      const dateLabel = toLocalYMD(update.date || update.created_at) || "";
+    const saveBtn = document.getElementById("save-btn");
+    const saveText = document.getElementById("save-text");
+    const saveLoading = document.getElementById("save-loading");
 
-      return `
-        <article class="scrum-card p-4 flex flex-col gap-3" data-view-id="${esc(update.id)}">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex items-center gap-3">
-              <div class="relative">
-                <div class="avatar"
-                     style="background: linear-gradient(135deg, ${memberInfo.color}, #7c3aed);">
-                  ${esc(initials)}
-                </div>
-                <div class="status-indicator ${hasBlockers ? "bg-rose-500" : "bg-emerald-400"}"></div>
+    saveBtn.disabled = true;
+    saveText.classList.add("hidden");
+    saveLoading.classList.remove("hidden");
+
+    try {
+      const formData = new FormData(e.target);
+
+      const payload = {
+        date: formData.get("date"),
+        team_member: formData.get("team_member"),
+        department: formData.get("department"),
+        yesterday_work: formData.get("yesterday_work") || "",
+        today_plan: formData.get("today_plan") || "",
+        blockers: formData.get("blockers") || "",
+        remarks: formData.get("remarks") || "",
+        created_at: new Date().toISOString()
+      };
+
+      let result;
+      if (activeEditId) {
+        delete payload.created_at;
+        result = await window.dataSdk.update(activeEditId, payload);
+      } else {
+        result = await window.dataSdk.create(payload);
+      }
+
+      if (result.isOk) {
+        closeModal();
+        showToast(activeEditId ? "Update saved." : "New entry added.", "success");
+      } else {
+        showToast("Failed to save update. Check Supabase settings.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Unexpected error while saving.", "error");
+    } finally {
+      saveBtn.disabled = false;
+      saveText.classList.remove("hidden");
+      saveLoading.classList.add("hidden");
+    }
+  }
+
+  // ================== UI RENDER ==================
+  function updateUI() {
+    updateDashboard();
+    updateManagerPanel();
+    updateSummaryView();
+  }
+
+  function updateDashboard() {
+    const container = document.getElementById("team-updates");
+    const emptyState = document.getElementById("empty-state");
+    const today = new Date().toISOString().split("T")[0];
+
+    const todayUpdates = currentData.filter(u => u.date === today);
+
+    if (!todayUpdates.length) {
+      container.innerHTML = "";
+      emptyState.classList.remove("hidden");
+      return;
+    }
+
+    emptyState.classList.add("hidden");
+
+    const latestByMember = {};
+    todayUpdates.forEach(u => {
+      if (!latestByMember[u.team_member] ||
+          new Date(u.created_at) > new Date(latestByMember[u.team_member].created_at)) {
+        latestByMember[u.team_member] = u;
+      }
+    });
+
+    container.innerHTML = Object.values(latestByMember)
+      .map(u => createUpdateCard(u))
+      .join("");
+
+    // attach edit + view handlers
+    container.querySelectorAll("[data-edit-id]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.editId;
+        const row = currentData.find(r => String(r.id) === String(id));
+        if (row) openModal(row);
+      });
+    });
+
+    container.querySelectorAll("[data-view-id]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.viewId;
+        const row = currentData.find(r => String(r.id) === String(id));
+        if (row) openViewModal(row);
+      });
+    });
+  }
+
+  function createUpdateCard(update) {
+    const tm = teamMembersIndex[update.team_member] || {};
+    const color = tm.color || "#6366f1";
+    const dept = update.department || tm.department || "";
+    const hasBlockers = !!(update.blockers && update.blockers.trim());
+    const initials = update.team_member
+      ? update.team_member.split(" ").map(n => n[0]).join("")
+      : "?";
+
+    return `
+      <article class="scrum-card p-4 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <div class="avatar" style="background: linear-gradient(135deg, ${color}, #a855f7);">
+                ${esc(initials)}
               </div>
-              <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <h3 class="text-sm font-semibold text-slate-900">
-                    ${esc(update.team_member || "Unassigned")}
-                  </h3>
-                  ${
-                    hasBlockers
-                      ? `<span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[0.7rem]">⚠ Blocker</span>`
-                      : `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[0.7rem]">✓ Clear</span>`
-                  }
-                </div>
-                <span class="department-pill">
-                  <span class="w-1.5 h-1.5 rounded-full"
-                        style="background-color:${memberInfo.color};"></span>
-                  ${esc(update.department || memberInfo.department || "Department")}
-                </span>
-              </div>
+              <div class="status-indicator ${hasBlockers ? "bg-rose-500" : "bg-emerald-400"}"></div>
             </div>
-            <button class="text-[0.7rem] px-2 py-1 rounded-full bg-slate-50 text-slate-500
-                           hover:text-violet-600 hover:bg-violet-50 transition-all"
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h3 class="text-sm md:text-base font-semibold text-slate-900">
+                  ${esc(update.team_member || "Unassigned")}
+                </h3>
+                ${hasBlockers
+                  ? `<span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[0.7rem]">⚠ Blocker</span>`
+                  : `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[0.7rem]">✓ Clear</span>`}
+              </div>
+              ${dept ? `
+                <span class="department-pill">
+                  <span class="w-1.5 h-1.5 rounded-full" style="background-color:${color};"></span>
+                  ${esc(dept)}
+                </span>` : ""}
+            </div>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <button class="text-[0.7rem] px-2 py-0.5 rounded-full bg-white border border-slate-200
+                           text-slate-600 hover:text-purple-600 hover:border-purple-400 transition-all"
+                    data-view-id="${esc(update.id)}">
+              View
+            </button>
+            <button class="text-[0.65rem] px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200
+                           text-slate-500 hover:text-purple-600 hover:border-purple-400 transition-all"
                     data-edit-id="${esc(update.id)}">
               ✏ Edit
             </button>
           </div>
+        </div>
 
-          <div class="space-y-2 text-small">
-            <div>
-              <p class="text-label mb-0.5">Yesterday</p>
-              <div class="rich-text text-slate-800">
-                ${renderRichText(update.yesterday_work || "No update provided.")}
-              </div>
-            </div>
-            <div>
-              <p class="text-label mb-0.5">Today</p>
-              <div class="rich-text text-slate-800">
-                ${renderRichText(update.today_plan || "No plan specified.")}
-              </div>
-            </div>
-            <div>
-              <p class="text-label mb-0.5">Blockers</p>
-              <div class="rich-text ${hasBlockers ? "text-rose-600" : "text-slate-500"}">
-                ${renderRichText(update.blockers || "None")}
-              </div>
-            </div>
-            ${
-              update.remarks
-                ? `<div>
-                    <p class="text-label mb-0.5">Notes</p>
-                    <div class="rich-text text-violet-700">
-                      ${renderRichText(update.remarks)}
-                    </div>
-                   </div>`
-                : ""
-            }
-          </div>
-
-          <div class="flex justify-between items-center text-[0.7rem] text-slate-500 pt-1">
-            <span>${esc(dateLabel)}</span>
-            <span>
-              ${
-                update.created_at
-                  ? new Date(update.created_at).toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"})
-                  : ""
-              }
-            </span>
-          </div>
-        </article>
-      `;
-    }
-
-    function updateSummaryView() {
-      const selectedDate = document.getElementById("summary-date").value;
-      const container = document.getElementById("summary-content");
-      if (!selectedDate) return;
-
-      const dayUpdates = currentData.filter(u => recordMatchesDay(u, selectedDate));
-
-      if (!dayUpdates.length) {
-        container.innerHTML = `
-          <div class="glass p-6 flex flex-col items-center gap-2">
-            <div class="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-500">📅</div>
-            <p class="text-sm text-slate-900">No updates for ${esc(selectedDate)}.</p>
-            <p class="text-small text-slate-500">
-              Ask the team to submit standup entries, or pick another date.
+        <div class="space-y-1.5 text-[0.8rem]">
+          <div>
+            <p class="text-label">Yesterday</p>
+            <p class="text-slate-800">
+              ${esc(update.yesterday_work || "No update provided.")}
             </p>
-          </div>`;
-        return;
-      }
+          </div>
+          <div>
+            <p class="text-label">Today</p>
+            <p class="text-slate-800">
+              ${esc(update.today_plan || "No plan specified.")}
+            </p>
+          </div>
+          <div>
+            <p class="text-label">Blockers</p>
+            <p class="${hasBlockers ? "text-rose-600" : "text-slate-500"}">
+              ${esc(update.blockers || "None")}
+            </p>
+          </div>
+          ${update.remarks ? `
+            <div>
+              <p class="text-label">Notes</p>
+              <p class="text-purple-700">${esc(update.remarks)}</p>
+            </div>` : ""}
+        </div>
 
-      const groups = {};
-      dayUpdates.forEach(u => {
-        if (!groups[u.team_member]) groups[u.team_member] = [];
-        groups[u.team_member].push(u);
-      });
+        <div class="flex justify-between items-center text-[0.7rem] text-slate-500 pt-1">
+          <span>${update.date ? esc(update.date) : ""}</span>
+          <span>
+            ${update.created_at
+              ? new Date(update.created_at).toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"})
+              : ""}
+          </span>
+        </div>
+      </article>
+    `;
+  }
 
+  // ================== VIEW MODAL ==================
+  function openViewModal(row) {
+    const modal = document.getElementById("view-modal");
+    const body = document.getElementById("view-modal-body");
+    const tm = teamMembersIndex[row.team_member] || {};
+    const color = tm.color || "#6366f1";
+    const dept = row.department || tm.department || "";
+    const initials = row.team_member
+      ? row.team_member.split(" ").map(n => n[0]).join("")
+      : "?";
+
+    body.innerHTML = `
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-white text-sm font-semibold"
+             style="background: linear-gradient(135deg, ${color}, #a855f7);">
+          ${esc(initials)}
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-semibold text-slate-900">
+              ${esc(row.team_member || "Unassigned")}
+            </div>
+            ${dept ? `
+              <span class="px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200 text-[0.7rem] text-slate-700">
+                ${esc(dept)}
+              </span>` : ""}
+          </div>
+          <div class="text-[0.75rem] text-slate-500">
+            ${row.date ? `For ${esc(row.date)}` : ""}
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2 text-[0.85rem]">
+        <div>
+          <div class="text-label">Yesterday's work</div>
+          <div class="text-slate-800 whitespace-pre-wrap">
+            ${esc(row.yesterday_work || "No update provided.")}
+          </div>
+        </div>
+        <div>
+          <div class="text-label">Today's plan</div>
+          <div class="text-slate-800 whitespace-pre-wrap">
+            ${esc(row.today_plan || "No plan specified.")}
+          </div>
+        </div>
+        <div>
+          <div class="text-label">Blockers</div>
+          <div class="${row.blockers ? "text-rose-600" : "text-slate-500"} whitespace-pre-wrap">
+            ${esc(row.blockers || "None")}
+          </div>
+        </div>
+        ${row.remarks ? `
+          <div>
+            <div class="text-label">Remarks / notes</div>
+            <div class="text-purple-700 whitespace-pre-wrap">
+              ${esc(row.remarks)}
+            </div>
+          </div>` : ""}
+        <div class="pt-2 text-[0.75rem] text-slate-500">
+          Created at:
+          ${row.created_at
+            ? new Date(row.created_at).toLocaleString()
+            : "N/A"}
+        </div>
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+  }
+
+  function closeViewModal() {
+    document.getElementById("view-modal").classList.add("hidden");
+  }
+
+  // ================== SUMMARY / EXPORT ==================
+  function updateSummaryView() {
+    const selectedDate = document.getElementById("summary-date").value;
+    const container = document.getElementById("summary-content");
+    if (!selectedDate) {
+      container.innerHTML = "";
+      return;
+    }
+
+    const dayUpdates = currentData.filter(u => u.date === selectedDate);
+
+    if (!dayUpdates.length) {
       container.innerHTML = `
-        <div class="glass p-5 space-y-4">
-          <h3 class="text-base font-semibold text-slate-900">
-            Standup summary — ${
-              new Date(selectedDate).toLocaleDateString("en-US", {
-                weekday:"long", month:"short", day:"numeric", year:"numeric"
-              })
-            }
-          </h3>
-          ${
-            Object.entries(groups).map(([member, list]) => {
-              const latest = list.sort((a,b) =>
-                new Date(b.created_at || b.date) - new Date(a.created_at || a.date))[0];
-              const info = teamMembers[member] || {color:"#64748b"};
+        <div class="glass p-6 flex flex-col items-center gap-2">
+          <div class="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center text-2xl text-purple-500">📅</div>
+          <p class="text-sm text-slate-900">No updates for ${esc(selectedDate)}.</p>
+          <p class="text-xs text-slate-500">
+            Ask the team to submit standup entries, or pick another date.
+          </p>
+        </div>`;
+      return;
+    }
 
-              return `
-                <div class="border-l-2 pl-3 space-y-1.5"
-                     style="border-color:${info.color};">
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold text-slate-900">
-                      ${esc(member || "Unassigned")}
-                    </span>
-                    <span class="text-[0.7rem] px-2 py-0.5 rounded-full
-                                 bg-slate-50 text-slate-700 border border-slate-200">
-                      ${esc(latest.department || "Department")}
-                    </span>
-                  </div>
-                  <div class="grid md:grid-cols-3 gap-2 text-small">
-                    <div>
-                      <div class="text-label">Yesterday</div>
-                      <div class="rich-text text-slate-800">
-                        ${renderRichText(latest.yesterday_work || "No update")}
-                      </div>
-                    </div>
-                    <div>
-                      <div class="text-label">Today</div>
-                      <div class="rich-text text-slate-800">
-                        ${renderRichText(latest.today_plan || "No plan")}
-                      </div>
-                    </div>
-                    <div>
-                      <div class="text-label">Blockers</div>
-                      <div class="rich-text ${latest.blockers ? "text-rose-600" : "text-slate-500"}">
-                        ${renderRichText(latest.blockers || "None")}
-                      </div>
-                    </div>
-                  </div>
-                  ${
-                    latest.remarks
-                      ? `<div class="text-[0.75rem] text-violet-700 rich-text">
-                           Notes: ${renderRichText(latest.remarks)}
-                         </div>`
-                      : ""
-                  }
-                </div>
-              `;
-            }).join("")
+    const groups = {};
+    dayUpdates.forEach(u => {
+      if (!groups[u.team_member]) groups[u.team_member] = [];
+      groups[u.team_member].push(u);
+    });
+
+    container.innerHTML = `
+      <div class="glass p-5 space-y-4">
+        <h3 class="text-sm md:text-base font-semibold text-slate-900">
+          Standup summary — ${
+            new Date(selectedDate).toLocaleDateString("en-US", {
+              weekday:"long", month:"short", day:"numeric", year:"numeric"
+            })
           }
-        </div>
-      `;
+        </h3>
+        ${
+          Object.entries(groups).map(([member, list]) => {
+            const latest = list.sort((a,b) =>
+              new Date(b.created_at) - new Date(a.created_at))[0];
+            const tm = teamMembersIndex[member] || {};
+            const color = tm.color || "#64748b";
+            const dept = latest.department || tm.department || "Dept";
+            return `
+              <div class="border-l-2 pl-3 space-y-1.5" style="border-color:${color};">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold text-slate-900">
+                    ${esc(member || "Unassigned")}
+                  </span>
+                  <span class="text-[0.7rem] px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200 text-slate-700">
+                    ${esc(dept)}
+                  </span>
+                </div>
+                <div class="grid md:grid-cols-3 gap-2 text-[0.8rem]">
+                  <div>
+                    <div class="text-label">Yesterday</div>
+                    <div class="text-slate-800">
+                      ${esc(latest.yesterday_work || "No update")}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-label">Today</div>
+                    <div class="text-slate-800">
+                      ${esc(latest.today_plan || "No plan")}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-label">Blockers</div>
+                    <div class="${latest.blockers ? "text-rose-600" : "text-slate-500"}">
+                      ${esc(latest.blockers || "None")}
+                    </div>
+                  </div>
+                </div>
+                ${latest.remarks ? `
+                  <div class="text-[0.75rem] text-purple-700">
+                    Notes: ${esc(latest.remarks)}
+                  </div>` : ""}
+              </div>
+            `;
+          }).join("")
+        }
+      </div>
+    `;
+  }
+
+  function exportRange() {
+    const from = document.getElementById("range-from").value;
+    const to = document.getElementById("range-to").value;
+
+    if (!from || !to) {
+      showToast("Select both From and To dates.", "error");
+      return;
     }
 
-    function updateManagerPanel() {
-      populateFilterDropdowns();
-      applyFilters();
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    if (fromDate > toDate) {
+      showToast("From date cannot be after To date.", "error");
+      return;
     }
 
-    function populateFilterDropdowns() {
-      const memberSelect = document.getElementById("filter-member");
-      const unique = [...new Set(currentData.map(u => u.team_member).filter(Boolean))];
+    const rows = currentData.filter(u => {
+      if (!u.date) return false;
+      const d = new Date(u.date);
+      return d >= fromDate && d <= toDate;
+    });
 
-      memberSelect.innerHTML =
-        `<option value="">All team members</option>` +
-        unique.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
+    if (!rows.length) {
+      showToast("No records in that range.", "error");
+      return;
     }
 
-    function applyFilters() {
-      const member = document.getElementById("filter-member").value;
-      const dept = document.getElementById("filter-department").value;
-      const date = document.getElementById("filter-date").value;
+    const headers = [
+      "date",
+      "team_member",
+      "department",
+      "yesterday_work",
+      "today_plan",
+      "blockers",
+      "remarks",
+      "created_at"
+    ];
 
-      let items = [...currentData];
+    const lines = [
+      headers.join(","),
+      ...rows.map(r => [
+        r.date,
+        r.team_member,
+        r.department,
+        (r.yesterday_work || "").replace(/"/g, '""'),
+        (r.today_plan || "").replace(/"/g, '""'),
+        (r.blockers || "").replace(/"/g, '""'),
+        (r.remarks || "").replace(/"/g, '""'),
+        r.created_at || ""
+      ].map(v => `"${v || ""}"`).join(","))
+    ];
 
-      if (member) items = items.filter(u => u.team_member === member);
-      if (dept) items = items.filter(u => u.department === dept);
-      if (date) items = items.filter(u => recordMatchesDay(u, date));
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `scrum-summary-${from}_to_${to}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-      displayManagerContent(items);
-    }
+    showToast("Range exported.", "success");
+  }
 
-    function displayManagerContent(data) {
-      const container = document.getElementById("manager-content");
-      const blockerArea = document.getElementById("blocker-escalation-area");
+  // ================== MANAGER VIEW ==================
+  function updateManagerPanel() {
+    populateFilterDropdowns();
+    applyFilters();
+  }
 
-      if (!data.length) {
-        blockerArea.innerHTML = "";
-        container.innerHTML = `
-          <div class="glass p-6 flex flex-col items-center gap-2">
-            <div class="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-2xl text-violet-500">🔍</div>
-            <p class="text-sm text-slate-900">No entries match the current filters.</p>
-            <p class="text-small text-slate-500">Adjust filters to see more.</p>
-          </div>`;
-        return;
-      }
+  function populateFilterDropdowns() {
+    const memberSelect = document.getElementById("filter-member");
+    const unique = [...new Set(currentData.map(u => u.team_member).filter(Boolean))];
 
-      const openBlockers = data.filter(u => u.blockers && u.blockers.trim());
-      if (openBlockers.length) {
-        blockerArea.innerHTML = `
-          <div class="rounded-2xl bg-rose-50 border border-rose-200 px-3 py-2 text-[0.8rem] text-rose-700">
-            <div class="font-semibold mb-1 flex items-center gap-1.5">
-              🚨 ${openBlockers.length} blocker${openBlockers.length>1?"s":""} need attention
-            </div>
-            <ul class="list-disc pl-4 space-y-0.5">
-              ${
-                openBlockers.slice(0,6).map(b => `
-                  <li>
-                    <span class="font-semibold">${esc(b.team_member)}</span>
-                    <span class="text-slate-500">(${esc(b.department || "")})</span> —
-                    ${esc(b.blockers)}
-                  </li>`).join("")
-              }
-            </ul>
-          </div>`;
-      } else {
-        blockerArea.innerHTML = "";
-      }
+    memberSelect.innerHTML =
+      `<option value="">All team members</option>` +
+      unique.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
+  }
 
-      const total = data.length;
-      const uniqueMembers = new Set(data.map(u => u.team_member)).size;
+  function applyFilters() {
+    const member = document.getElementById("filter-member").value;
+    const dept = document.getElementById("filter-department").value;
+    const date = document.getElementById("filter-date").value;
 
+    let items = [...currentData];
+
+    if (member) items = items.filter(u => u.team_member === member);
+    if (dept) items = items.filter(u => u.department === dept);
+    if (date) items = items.filter(u => u.date === date);
+
+    displayManagerContent(items);
+  }
+
+  function displayManagerContent(data) {
+    const container = document.getElementById("manager-content");
+    const blockerArea = document.getElementById("blocker-escalation-area");
+
+    if (!data.length) {
+      blockerArea.innerHTML = "";
       container.innerHTML = `
-        <div class="grid grid-cols-3 gap-2 mb-3 text-[0.8rem]">
-          <div class="glass px-3 py-2">
-            <div class="text-label">Total updates</div>
-            <div class="text-lg font-semibold text-slate-900">${total}</div>
+        <div class="glass p-6 flex flex-col items-center gap-2">
+          <div class="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center text-2xl text-purple-500">🔍</div>
+          <p class="text-sm text-slate-900">No entries match the current filters.</p>
+          <p class="text-xs text-slate-500">Adjust filters to see more.</p>
+        </div>`;
+      return;
+    }
+
+    const openBlockers = data.filter(u => u.blockers && u.blockers.trim());
+    if (openBlockers.length) {
+      blockerArea.innerHTML = `
+        <div class="rounded-2xl bg-rose-50 border border-rose-200 px-3 py-2 text-[0.75rem] text-rose-700">
+          <div class="font-semibold mb-1 flex items-center gap-1.5">
+            🚨 ${openBlockers.length} blocker${openBlockers.length>1?"s":""} need attention
           </div>
-          <div class="glass px-3 py-2">
-            <div class="text-label">Active members</div>
-            <div class="text-lg font-semibold text-emerald-500">${uniqueMembers}</div>
-          </div>
-          <div class="glass px-3 py-2">
-            <div class="text-label">Open blockers</div>
-            <div class="text-lg font-semibold ${openBlockers.length ? "text-rose-500" : "text-slate-400"}">
-              ${openBlockers.length}
-            </div>
+          <ul class="list-disc pl-4 space-y-0.5">
+            ${
+              openBlockers.slice(0,6).map(b => `
+                <li>
+                  <span class="font-semibold">${esc(b.team_member)}</span>
+                  <span class="text-slate-500"> (${esc(b.department || "")})</span> —
+                  ${esc(b.blockers)}
+                </li>`).join("")
+            }
+          </ul>
+        </div>`;
+    } else {
+      blockerArea.innerHTML = "";
+    }
+
+    const total = data.length;
+    const uniqueMembers = new Set(data.map(u => u.team_member)).size;
+
+    container.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 text-[0.8rem]">
+        <div class="glass px-3 py-2">
+          <div class="text-slate-500">Total updates</div>
+          <div class="text-xl font-semibold text-slate-900">${total}</div>
+        </div>
+        <div class="glass px-3 py-2">
+          <div class="text-slate-500">Active members</div>
+          <div class="text-xl font-semibold text-emerald-500">${uniqueMembers}</div>
+        </div>
+        <div class="glass px-3 py-2">
+          <div class="text-slate-500">Open blockers</div>
+          <div class="text-xl font-semibold ${openBlockers.length ? "text-rose-500" : "text-slate-400"}">
+            ${openBlockers.length}
           </div>
         </div>
+      </div>
 
-        <div class="space-y-2">
-          ${
-            data.map(u => {
-              const info = teamMembers[u.team_member] || {color:"#64748b"};
-              const hasBlockers = u.blockers && u.blockers.trim();
-              const initials = u.team_member
-                ? u.team_member.split(" ").map(n => n[0]).join("")
-                : "?";
-              const dateLabel = toLocalYMD(u.date || u.created_at) || "";
-              return `
-                <div class="glass px-3 py-2 flex flex-col gap-1.5 text-[0.8rem]"
-                     data-view-id="${esc(u.id)}">
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="flex items-center gap-2">
-                      <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[0.7rem] text-white"
-                           style="background: linear-gradient(135deg, ${info.color}, #7c3aed);">
-                        ${esc(initials)}
+      <div class="space-y-2">
+        ${
+          data.map(u => {
+            const tm = teamMembersIndex[u.team_member] || {};
+            const color = tm.color || "#64748b";
+            const hasBlockers = u.blockers && u.blockers.trim();
+            const initials = u.team_member
+              ? u.team_member.split(" ").map(n => n[0]).join("")
+              : "?";
+
+            return `
+              <div class="glass px-3 py-2 flex flex-col gap-1.5 text-[0.8rem]">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[0.7rem] text-white"
+                         style="background: linear-gradient(135deg, ${color}, #a855f7);">
+                      ${esc(initials)}
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-semibold text-slate-900">${esc(u.team_member || "Unassigned")}</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-50 text-slate-600 border border-slate-200">
+                          ${esc(u.department || "")}
+                        </span>
                       </div>
-                      <div>
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                          <span class="font-semibold text-slate-900">${esc(u.team_member || "Unassigned")}</span>
-                          <span class="px-1.5 py-0.5 rounded-full bg-slate-50 text-slate-600 border border-slate-200">
-                            ${esc(u.department || "")}
-                          </span>
-                        </div>
-                        <div class="text-slate-500 text-[0.75rem]">
-                          ${esc(dateLabel)}
-                          ${hasBlockers ? " • ⚠ Blocker" : ""}
-                        </div>
+                      <div class="text-slate-500 text-[0.7rem]">
+                        ${esc(u.date || "")}
+                        ${hasBlockers ? " • ⚠ Blocker" : ""}
                       </div>
                     </div>
-                    <button class="px-2 py-0.5 rounded-full bg-slate-50 text-slate-500 hover:text-violet-600
-                                   hover:bg-violet-50 transition-all"
+                  </div>
+                  <div class="flex flex-col items-end gap-1">
+                    <button class="px-2 py-0.5 rounded-full bg-white text-slate-500 hover:text-purple-600
+                                   hover:border-purple-400 border border-slate-200 text-[0.7rem]"
+                            data-view-id="${esc(u.id)}">
+                      View
+                    </button>
+                    <button class="px-2 py-0.5 rounded-full bg-slate-50 text-slate-500 hover:text-purple-600
+                                   hover:border-purple-400 border border-slate-200 text-[0.7rem]"
                             data-edit-id="${esc(u.id)}">
                       Edit
                     </button>
                   </div>
-                  <div class="grid md:grid-cols-2 gap-1.5">
-                    <div>
-                      <span class="text-label">Yesterday:</span>
-                      <div class="rich-text text-slate-800">
-                        ${renderRichText(u.yesterday_work || "—")}
-                      </div>
-                    </div>
-                    <div>
-                      <span class="text-label">Today:</span>
-                      <div class="rich-text text-slate-800">
-                        ${renderRichText(u.today_plan || "—")}
-                      </div>
-                    </div>
-                  </div>
-                  ${
-                    hasBlockers ? `
-                      <div class="rich-text text-rose-600">
-                        <span class="font-medium">Blocker:</span>
-                        ${renderRichText(u.blockers)}
-                      </div>` : ""
-                  }
-                  ${
-                    u.remarks ? `
-                      <div class="rich-text text-violet-700">
-                        <span class="font-medium">Notes:</span>
-                        ${renderRichText(u.remarks)}
-                      </div>` : ""
-                  }
                 </div>
-              `;
-            }).join("")
-          }
-        </div>
-      `;
+                <div class="grid md:grid-cols-2 gap-1.5">
+                  <div>
+                    <span class="text-label">Yesterday:</span>
+                    <span class="text-slate-800"> ${esc(u.yesterday_work || "—")} </span>
+                  </div>
+                  <div>
+                    <span class="text-label">Today:</span>
+                    <span class="text-slate-800"> ${esc(u.today_plan || "—")} </span>
+                  </div>
+                </div>
+                ${hasBlockers ? `
+                  <div class="text-rose-600">
+                    <span class="font-medium">Blocker:</span> ${esc(u.blockers)}
+                  </div>` : ""}
+                ${u.remarks ? `
+                  <div class="text-purple-700">
+                    <span class="font-medium">Notes:</span> ${esc(u.remarks)}
+                  </div>` : ""}
+              </div>
+            `;
+          }).join("")
+        }
+      </div>
+    `;
 
-      // cards -> detail
-      container.querySelectorAll("[data-view-id]").forEach(card => {
-        card.addEventListener("click", () => {
-          const id = card.dataset.viewId;
-          const row = currentData.find(r => String(r.id) === String(id));
-          if (row) openDetailModal(row);
-        });
+    // wire edit/view buttons
+    container.querySelectorAll("[data-edit-id]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.editId;
+        const row = currentData.find(r => String(r.id) === String(id));
+        if (row) openModal(row);
       });
-      // edit without opening detail
-      container.querySelectorAll("[data-edit-id]").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const id = btn.dataset.editId;
-          const row = currentData.find(r => String(r.id) === String(id));
-          if (row) openModal(row);
-        });
+    });
+    container.querySelectorAll("[data-view-id]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.viewId;
+        const row = currentData.find(r => String(r.id) === String(id));
+        if (row) openViewModal(row);
       });
-    }
+    });
+  }
 
-    // ================== DETAIL MODAL ==================
-    function openDetailModal(update) {
-      detailCurrentId = update.id;
-
-      const memberInfo = teamMembers[update.team_member] ||
-        { department: update.department || "", color: "#7c3aed" };
-      const initials = update.team_member
-        ? update.team_member.split(" ").map(n => n[0]).join("")
-        : "?";
-      const dateLabel = toLocalYMD(update.date || update.created_at) || "";
-      const createdLabel = update.created_at
-        ? new Date(update.created_at).toLocaleString()
-        : "";
-      const hasBlockers = !!(update.blockers && update.blockers.trim());
-
-      const avatar = document.getElementById("detail-avatar");
-      avatar.textContent = initials;
-      avatar.style.background = `linear-gradient(135deg, ${memberInfo.color}, #7c3aed)`;
-
-      document.getElementById("detail-name").textContent =
-        update.team_member || "Unassigned";
-
-      const deptEl = document.getElementById("detail-department");
-      deptEl.innerHTML = `
-        <span class="w-1.5 h-1.5 rounded-full" style="background-color:${memberInfo.color};"></span>
-        ${esc(update.department || memberInfo.department || "Department")}
-      `;
-
-      document.getElementById("detail-date").textContent =
-        dateLabel ? `Standup date: ${dateLabel}` : "";
-      document.getElementById("detail-created").textContent =
-        createdLabel ? `Created: ${createdLabel}` : "";
-
-      const statusPill = document.getElementById("detail-status-pill");
-      if (hasBlockers) {
-        statusPill.textContent = "⚠ Has active blockers";
-        statusPill.className =
-          "px-2 py-0.5 rounded-full text-[0.7rem] font-medium bg-rose-50 text-rose-600 border border-rose-200";
-      } else {
-        statusPill.textContent = "✓ No blockers";
-        statusPill.className =
-          "px-2 py-0.5 rounded-full text-[0.7rem] font-medium bg-emerald-50 text-emerald-600 border border-emerald-200";
-      }
-
-      document.getElementById("detail-yesterday").innerHTML =
-        renderRichText(update.yesterday_work || "No update provided.");
-      document.getElementById("detail-today").innerHTML =
-        renderRichText(update.today_plan || "No plan provided.");
-      document.getElementById("detail-blockers").innerHTML =
-        renderRichText(update.blockers || "No blockers reported.");
-      document.getElementById("detail-remarks").innerHTML =
-        renderRichText(update.remarks || "No additional remarks.");
-
-      document.getElementById("detail-modal").classList.remove("hidden");
-    }
-
-    function closeDetailModal() {
-      detailCurrentId = null;
-      document.getElementById("detail-modal").classList.add("hidden");
-    }
-
-    // ================== EXPORT CSV ==================
-    function exportSummary() {
-      const selectedDate = document.getElementById("summary-date").value;
-      if (!selectedDate) {
-        showToast("Pick a date first.", "error");
-        return;
-      }
-
-      const rows = currentData.filter(u => recordMatchesDay(u, selectedDate));
-      if (!rows.length) {
-        showToast("No data for that date.", "error");
-        return;
-      }
-
-      const headers = [
-        "date",
-        "team_member",
-        "department",
-        "yesterday_work",
-        "today_plan",
-        "blockers",
-        "remarks"
-      ];
-
-      const lines = [
-        headers.join(","),
-        ...rows.map(r => [
-          toLocalYMD(r.date || r.created_at) || "",
-          r.team_member || "",
-          r.department || "",
-          (r.yesterday_work || "").replace(/"/g, '""'),
-          (r.today_plan || "").replace(/"/g, '""'),
-          (r.blockers || "").replace(/"/g, '""'),
-          (r.remarks || "").replace(/"/g, '""')
-        ].map(v => `"${v}"`).join(","))
-      ];
-
-      const blob = new Blob([lines.join("\n")], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `scrum-summary-${selectedDate}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      showToast("Summary exported.", "success");
-    }
-
-    // ================== UTILITIES ==================
-    function updateCurrentDate() {
-      const now = new Date();
-      document.getElementById("current-date").textContent =
-        now.toLocaleDateString("en-US", {
-          weekday: "long", month: "short", day: "numeric", year: "numeric"
-        });
-    }
-
-    function toggleTimer() {
-      const btn = document.getElementById("start-scrum-btn");
-      const timerDisplay = document.getElementById("timer-display");
-
-      if (!isTimerRunning) {
-        timerSeconds = defaultConfig.meeting_duration * 60;
-        isTimerRunning = true;
-        btn.textContent = "⏹ Stop Scrum";
-        btn.classList.add("timer-active");
-        timerDisplay.classList.remove("hidden");
-
-        timerInterval = setInterval(() => {
-          timerSeconds--;
-          updateTimerDisplay();
-          if (timerSeconds <= 0) {
-            clearInterval(timerInterval);
-            isTimerRunning = false;
-            btn.textContent = "🚀 Start Scrum";
-            btn.classList.remove("timer-active");
-            timerDisplay.classList.add("hidden");
-            showToast("Standup timer finished.", "success");
-          }
-        }, 1000);
-      } else {
-        clearInterval(timerInterval);
-        isTimerRunning = false;
-        btn.textContent = "🚀 Start Scrum";
-        btn.classList.remove("timer-active");
-        timerDisplay.classList.add("hidden");
-      }
-    }
-
-    function updateTimerDisplay() {
-      const minutes = Math.floor(timerSeconds / 60);
-      const seconds = timerSeconds % 60;
-      const s = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-      const el = document.getElementById("timer-text");
-      if (el) el.textContent = s;
-    }
-
-    function switchTab(tabName) {
-      document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.classList.remove("active");
+  // ================== GENERAL HELPERS ==================
+  function updateCurrentDate() {
+    const now = new Date();
+    document.getElementById("current-date").textContent =
+      now.toLocaleDateString("en-US", {
+        weekday:"long", month:"short", day:"numeric", year:"numeric"
       });
+  }
 
-      const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
-      if (activeBtn) activeBtn.classList.add("active");
+  function toggleTimer() {
+    const btn = document.getElementById("start-scrum-btn");
+    const timerDisplay = document.getElementById("timer-display");
 
-      document.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
-      const target = document.getElementById(`${tabName}-tab`);
-      if (target) target.classList.remove("hidden");
+    if (!isTimerRunning) {
+      timerSeconds = defaultConfig.meeting_duration * 60;
+      isTimerRunning = true;
+      btn.textContent = "⏹ Stop Scrum";
+      btn.classList.add("timer-active");
+      timerDisplay.classList.remove("hidden");
 
-      if (tabName === "summary") updateSummaryView();
-      if (tabName === "manager") updateManagerPanel();
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        updateTimerDisplay();
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval);
+          isTimerRunning = false;
+          btn.textContent = "🚀 Start Scrum";
+          btn.classList.remove("timer-active");
+          timerDisplay.classList.add("hidden");
+          showToast("Standup timer finished.", "success");
+        }
+      }, 1000);
+    } else {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      btn.textContent = "🚀 Start Scrum";
+      btn.classList.remove("timer-active");
+      timerDisplay.classList.add("hidden");
     }
+  }
 
-    function showToast(message, type = "info") {
-      const base =
-        "fixed top-4 right-4 z-50 px-3 py-2 rounded-2xl text-[0.8rem] font-medium " +
-        "shadow-lg transform translate-x-full opacity-0 transition-all";
-      const colors = {
-        success: "bg-emerald-500 text-white",
-        error: "bg-rose-500 text-white",
-        info: "bg-violet-500 text-white"
-      };
+  function updateTimerDisplay() {
+    const minutes = Math.floor(timerSeconds / 60);
+    const seconds = timerSeconds % 60;
+    const s = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+    const el = document.getElementById("timer-text");
+    if (el) el.textContent = s;
+  }
 
-      const toast = document.createElement("div");
-      toast.className = base + " " + (colors[type] || colors.info);
-      toast.textContent = message;
-      document.body.appendChild(toast);
+  function switchTab(tabName) {
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.classList.remove("active");
+    });
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (activeBtn) activeBtn.classList.add("active");
 
-      requestAnimationFrame(() => {
-        toast.classList.remove("translate-x-full", "opacity-0");
-      });
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
+    const target = document.getElementById(`${tabName}-tab`);
+    if (target) target.classList.remove("hidden");
 
-      setTimeout(() => {
-        toast.classList.add("translate-x-full", "opacity-0");
-        setTimeout(() => toast.remove(), 220);
-      }, 2600);
-    }
+    if (tabName === "summary") updateSummaryView();
+    if (tabName === "manager") updateManagerPanel();
+  }
 
-    // ================== MODAL HELPERS ==================
-    function openModal(existing) {
-      const modal = document.getElementById("update-modal");
-      const title = document.getElementById("modal-title");
-      const editHint = document.getElementById("edit-hint");
-      const saveText = document.getElementById("save-text");
+  function showToast(message, type = "info") {
+    const base =
+      "fixed top-4 right-4 z-50 px-3 py-2 rounded-2xl text-[0.8rem] font-medium " +
+      "shadow-lg bg-white border transform translate-x-full opacity-0 transition-all";
+    const colors = {
+      success: "border-emerald-200 text-emerald-700",
+      error: "border-rose-200 text-rose-700",
+      info: "border-sky-200 text-sky-700"
+    };
 
-      if (existing) {
-        activeEditId = existing.id;
-        title.textContent = "Edit standup update";
-        editHint.classList.remove("hidden");
-        saveText.textContent = "Save changes";
+    const toast = document.createElement("div");
+    toast.className = base + " " + (colors[type] || colors.info);
+    toast.textContent = message;
+    document.body.appendChild(toast);
 
-        document.getElementById("update-date").value =
-          existing.date?.split("T")[0] || toLocalYMD(existing.created_at) || "";
-        document.getElementById("team-member").value = existing.team_member || "";
-        document.getElementById("department").value = existing.department || "";
-        document.getElementById("yesterday-work").value = existing.yesterday_work || "";
-        document.getElementById("today-plan").value = existing.today_plan || "";
-        document.getElementById("blockers").value = existing.blockers || "";
-        document.getElementById("remarks").value = existing.remarks || "";
-      } else {
-        activeEditId = null;
-        title.textContent = "New standup update";
-        editHint.classList.add("hidden");
-        saveText.textContent = "Save update";
+    requestAnimationFrame(() => {
+      toast.classList.remove("translate-x-full", "opacity-0");
+    });
 
-        const todayYMD = toLocalYMD(new Date());
-        document.getElementById("update-date").value = todayYMD;
-        document.getElementById("team-member").value = "";
-        document.getElementById("department").value = "";
-        document.getElementById("yesterday-work").value = "";
-        document.getElementById("today-plan").value = "";
-        document.getElementById("blockers").value = "";
-        document.getElementById("remarks").value = "";
-      }
+    setTimeout(() => {
+      toast.classList.add("translate-x-full", "opacity-0");
+      setTimeout(() => toast.remove(), 220);
+    }, 2600);
+  }
 
-      modal.classList.remove("hidden");
-    }
+  function openModal(existing) {
+    const modal = document.getElementById("update-modal");
+    const title = document.getElementById("modal-title");
+    const editHint = document.getElementById("edit-hint");
+    const saveText = document.getElementById("save-text");
 
-    function closeModal() {
+    if (existing) {
+      activeEditId = existing.id;
+      title.textContent = "Edit standup update";
+      editHint.classList.remove("hidden");
+      saveText.textContent = "Save changes";
+
+      document.getElementById("update-date").value = existing.date || "";
+      document.getElementById("team-member").value = existing.team_member || "";
+      document.getElementById("department").value = existing.department || "";
+      document.getElementById("yesterday-work").value = existing.yesterday_work || "";
+      document.getElementById("today-plan").value = existing.today_plan || "";
+      document.getElementById("blockers").value = existing.blockers || "";
+      document.getElementById("remarks").value = existing.remarks || "";
+    } else {
       activeEditId = null;
-      document.getElementById("update-modal").classList.add("hidden");
+      title.textContent = "New standup update";
+      editHint.classList.add("hidden");
+      saveText.textContent = "Save update";
+
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("update-date").value = today;
+      document.getElementById("team-member").value = "";
+      document.getElementById("department").value = "";
+      document.getElementById("yesterday-work").value = "";
+      document.getElementById("today-plan").value = "";
+      document.getElementById("blockers").value = "";
+      document.getElementById("remarks").value = "";
     }
-  </script>
+
+    modal.classList.remove("hidden");
+  }
+
+  function closeModal() {
+    activeEditId = null;
+    document.getElementById("update-modal").classList.add("hidden");
+  }
+</script>
 </body>
 </html>
