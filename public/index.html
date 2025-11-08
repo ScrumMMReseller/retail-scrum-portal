@@ -28,6 +28,7 @@
       font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--brand-bg);
       color: var(--brand-text-main);
+      font-size: 15px;
     }
 
     header {
@@ -44,7 +45,7 @@
 
     .scrum-card {
       transition: all 0.18s ease;
-      border-radius: 18px;
+      border-radius: 22px;
       border: 1px solid var(--brand-border-subtle);
       background:
         radial-gradient(circle at top left, var(--brand-accent-soft), transparent),
@@ -162,9 +163,14 @@
       resize: vertical;
       min-height: 68px;
     }
+
+    /* preserve bullets & line breaks for content text */
+    .multiline {
+      white-space: pre-line;
+    }
   </style>
 </head>
-<body class="min-h-screen text-[15px]">
+<body class="min-h-screen">
 <div id="app" class="min-h-screen">
   <!-- HEADER -->
   <header class="w-full">
@@ -345,7 +351,7 @@
             New standup update
           </h3>
           <p class="text-xs text-slate-500">
-            Shift+Enter in textareas to insert a bullet (•).
+            Use Shift+Enter to add a new bullet (•) on the next line.
           </p>
         </div>
         <button id="close-modal"
@@ -437,7 +443,7 @@
 
   <!-- VIEW DETAIL MODAL -->
   <div id="view-modal"
-       class="fixed inset-0 z-30 hidden modal-overlay flex items-center justify-center px-3">
+       class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center px-3">
     <div class="glass max-w-xl w-full max-h-[90vh] overflow-y-auto p-5">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-base font-semibold text-slate-900">Standup details</h3>
@@ -453,10 +459,11 @@
 </div>
 
 <script>
+  // ========= CONFIG =========
   const defaultConfig = { meeting_duration: 15 };
-
   const SUPABASE_URL = "https://vzyiwazyqqgznyqfcbtt.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6eWl3YXp5cXFnem55cWZjYnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MDAwMjQsImV4cCI6MjA3ODA3NjAyNH0.lGitaQYnskj8OcMR9MDsPL1n8oMOxunMQKwyjJEPOyg";
 
   const supabaseHeaders = {
     apikey: SUPABASE_ANON_KEY,
@@ -482,7 +489,7 @@
       .replace(/"/g, "&quot;");
   }
 
-  // ------------- Supabase SDK wrapper -------------
+  // ========= Supabase SDK wrapper =========
   window.dataSdk = {
     _handler: null,
 
@@ -570,11 +577,14 @@
     }
   };
 
-  // ------------- Load team members from Supabase -------------
+  // ========= Load team members from Supabase =========
   async function loadTeamMembers() {
     try {
-      // NOTE: uses 'scrum_team_members' as per your schema hint
-      const url = `${SUPABASE_URL}/rest/v1/scrum_team_members?select=name,department,color,active&order=name.asc`;
+      // IMPORTANT: expects table public.scrum_team_members(name, department, color, active)
+      const url =
+        `${SUPABASE_URL}/rest/v1/scrum_team_members` +
+        `?select=name,department,color,active&order=name.asc`;
+
       const resp = await fetch(url, { headers: supabaseHeaders });
 
       if (!resp.ok) {
@@ -607,7 +617,6 @@
   }
 
   function applyFallbackTeamMembers() {
-    // Fallback so UI still works if table missing / misconfigured
     teamMembersIndex = {
       "Amrit":   { department: "Management",   color: "#38bdf8" },
       "Vihan":   { department: "Retail / MM",  color: "#22c55e" },
@@ -651,7 +660,7 @@
     }
   };
 
-  // ------------- INIT -------------
+  // ========= INIT =========
   document.addEventListener("DOMContentLoaded", initializeApp);
 
   async function initializeApp() {
@@ -673,7 +682,7 @@
     }
   }
 
-  // ------------- LISTENERS -------------
+  // ========= LISTENERS =========
   function setupStaticListeners() {
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab));
@@ -699,6 +708,11 @@
 
     document.getElementById("close-view-modal")
       .addEventListener("click", closeViewModal);
+
+    // close view modal on background click
+    document.getElementById("view-modal").addEventListener("click", e => {
+      if (e.target.id === "view-modal") closeViewModal();
+    });
   }
 
   function setupBulletEnhancers() {
@@ -722,7 +736,7 @@
     });
   }
 
-  // ------------- FORM (CREATE / EDIT) -------------
+  // ========= FORM (CREATE / EDIT) =========
   async function handleFormSubmit(e) {
     e.preventDefault();
 
@@ -777,7 +791,7 @@
     }
   }
 
-  // ------------- UI RENDER -------------
+  // ========= UI RENDER =========
   function updateUI() {
     updateDashboard();
     updateManagerPanel();
@@ -880,22 +894,26 @@
         <div class="space-y-1.5 text-[0.8rem]">
           <div>
             <p class="text-label">Yesterday</p>
-            <p class="text-slate-800">${esc(update.yesterday_work || "No update provided.")}</p>
+            <p class="text-slate-800 multiline">
+              ${esc(update.yesterday_work || "No update provided.")}
+            </p>
           </div>
           <div>
             <p class="text-label">Today</p>
-            <p class="text-slate-800">${esc(update.today_plan || "No plan specified.")}</p>
+            <p class="text-slate-800 multiline">
+              ${esc(update.today_plan || "No plan specified.")}
+            </p>
           </div>
           <div>
             <p class="text-label">Blockers</p>
-            <p class="${hasBlockers ? "text-rose-600" : "text-slate-500"}">
+            <p class="${hasBlockers ? "text-rose-600" : "text-slate-500"} multiline">
               ${esc(update.blockers || "None")}
             </p>
           </div>
           ${update.remarks ? `
             <div>
               <p class="text-label">Notes</p>
-              <p class="text-purple-700">${esc(update.remarks)}</p>
+              <p class="text-purple-700 multiline">${esc(update.remarks)}</p>
             </div>` : ""}
         </div>
 
@@ -911,7 +929,7 @@
     `;
   }
 
-  // ------------- VIEW MODAL -------------
+  // ========= VIEW MODAL =========
   function openViewModal(row) {
     const modal = document.getElementById("view-modal");
     const body = document.getElementById("view-modal-body");
@@ -945,26 +963,26 @@
       <div class="space-y-2 text-[0.85rem]">
         <div>
           <div class="text-label">Yesterday's work</div>
-          <div class="text-slate-800 whitespace-pre-wrap">
+          <div class="text-slate-800 multiline">
             ${esc(row.yesterday_work || "No update provided.")}
           </div>
         </div>
         <div>
           <div class="text-label">Today's plan</div>
-          <div class="text-slate-800 whitespace-pre-wrap">
+          <div class="text-slate-800 multiline">
             ${esc(row.today_plan || "No plan specified.")}
           </div>
         </div>
         <div>
           <div class="text-label">Blockers</div>
-          <div class="${row.blockers ? "text-rose-600" : "text-slate-500"} whitespace-pre-wrap">
+          <div class="${row.blockers ? "text-rose-600" : "text-slate-500"} multiline">
             ${esc(row.blockers || "None")}
           </div>
         </div>
         ${row.remarks ? `
           <div>
             <div class="text-label">Remarks / notes</div>
-            <div class="text-purple-700 whitespace-pre-wrap">
+            <div class="text-purple-700 multiline">
               ${esc(row.remarks)}
             </div>
           </div>` : ""}
@@ -982,7 +1000,7 @@
     document.getElementById("view-modal").classList.add("hidden");
   }
 
-  // ------------- SUMMARY / EXPORT (RANGE) -------------
+  // ========= SUMMARY / EXPORT RANGE =========
   function updateSummaryView() {
     const selectedDate = document.getElementById("summary-date").value;
     const container = document.getElementById("summary-content");
@@ -1027,6 +1045,7 @@
             const tm = teamMembersIndex[member] || {};
             const color = tm.color || "#64748b";
             const dept = latest.department || tm.department || "Dept";
+            const hasBlockers = latest.blockers && latest.blockers.trim();
             return `
               <div class="border-l-2 pl-3 space-y-1.5" style="border-color:${color};">
                 <div class="flex items-center gap-2">
@@ -1040,25 +1059,25 @@
                 <div class="grid md:grid-cols-3 gap-2 text-[0.8rem]">
                   <div>
                     <div class="text-label">Yesterday</div>
-                    <div class="text-slate-800">
+                    <div class="text-slate-800 multiline">
                       ${esc(latest.yesterday_work || "No update")}
                     </div>
                   </div>
                   <div>
                     <div class="text-label">Today</div>
-                    <div class="text-slate-800">
+                    <div class="text-slate-800 multiline">
                       ${esc(latest.today_plan || "No plan")}
                     </div>
                   </div>
                   <div>
                     <div class="text-label">Blockers</div>
-                    <div class="${latest.blockers ? "text-rose-600" : "text-slate-500"}">
+                    <div class="${hasBlockers ? "text-rose-600" : "text-slate-500"} multiline">
                       ${esc(latest.blockers || "None")}
                     </div>
                   </div>
                 </div>
                 ${latest.remarks ? `
-                  <div class="text-[0.75rem] text-purple-700">
+                  <div class="text-[0.75rem] text-purple-700 multiline">
                     Notes: ${esc(latest.remarks)}
                   </div>` : ""}
               </div>
@@ -1134,7 +1153,7 @@
     showToast("Range exported.", "success");
   }
 
-  // ------------- MANAGER VIEW -------------
+  // ========= MANAGER VIEW =========
   function updateManagerPanel() {
     populateFilterDropdowns();
     applyFilters();
@@ -1267,19 +1286,19 @@
                 <div class="grid md:grid-cols-2 gap-1.5">
                   <div>
                     <span class="text-label">Yesterday:</span>
-                    <span class="text-slate-800"> ${esc(u.yesterday_work || "—")} </span>
+                    <span class="text-slate-800 multiline"> ${esc(u.yesterday_work || "—")} </span>
                   </div>
                   <div>
                     <span class="text-label">Today:</span>
-                    <span class="text-slate-800"> ${esc(u.today_plan || "—")} </span>
+                    <span class="text-slate-800 multiline"> ${esc(u.today_plan || "—")} </span>
                   </div>
                 </div>
                 ${hasBlockers ? `
-                  <div class="text-rose-600">
+                  <div class="text-rose-600 multiline">
                     <span class="font-medium">Blocker:</span> ${esc(u.blockers)}
                   </div>` : ""}
                 ${u.remarks ? `
-                  <div class="text-purple-700">
+                  <div class="text-purple-700 multiline">
                     <span class="font-medium">Notes:</span> ${esc(u.remarks)}
                   </div>` : ""}
               </div>
@@ -1305,7 +1324,7 @@
     });
   }
 
-  // ------------- GENERAL HELPERS -------------
+  // ========= GENERAL HELPERS =========
   function updateCurrentDate() {
     const now = new Date();
     document.getElementById("current-date").textContent =
